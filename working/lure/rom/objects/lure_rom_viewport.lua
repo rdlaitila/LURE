@@ -19,8 +19,10 @@ function lure.rom.newViewportObject()
 		self.computedStyle.backgroundColor 	= lure.rom.computeBoxRenderStyleBackgroundColor( self )
 		self.computedStyle.left				= lure.rom.computeViewportRenderStyleLeft( self )
 		self.computedStyle.top				= lure.rom.computeViewportRenderStyleTop( self )		
-		self.computedStyle.width 			= lure.rom.computeViewportRenderStyleWidth( self )		
-		self.computedStyle.height			= lure.rom.computeViewportRenderStyleHeight( self )
+		self.computedStyle.width 			= lure.rom.computeViewportRenderStyleWidth( self )
+		if self.computedStyle.height ~= "auto" then
+			self.computedStyle.height			= lure.rom.computeViewportRenderStyleHeight( self )
+		end
 		
 		--do child node layouts
 		if self.hasChildNodes() then
@@ -29,6 +31,10 @@ function lure.rom.newViewportObject()
 					self.childNodes[a].layout()
 				end
 			end
+		end
+
+		if self.computedStyle.height == "auto" then
+			self.computedStyle.height = lure.rom.computeViewportRenderStyleHeight( self )
 		end		
 	end
 	---------------------------------------------------------------------	
@@ -37,7 +43,7 @@ function lure.rom.newViewportObject()
 		local prevScissor 	= {}		
 		prevScissor.x, prevScissor.y, prevScissor.width, prevScissor.height = love.graphics.getScissor()		
 		
-		-- set scissor to viewport dimensions
+		-- set scissor to viewport dimensions		
 		love.graphics.setScissor( self.computedStyle.left, self.computedStyle.top, self.computedStyle.width, self.computedStyle.height )			
 		
 		--backgroundColor

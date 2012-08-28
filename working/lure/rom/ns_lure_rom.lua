@@ -1,7 +1,5 @@
 lure.rom = {}
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.init()
 	-- ROM DEPENDENCIES
 	
@@ -15,6 +13,7 @@ function lure.rom.init()
 	require(lure.require_path .. "rom//objects//lure_rom_box")
 	require(lure.require_path .. "rom//objects//lure_rom_blockBox")
 	require(lure.require_path .. "rom//objects//lure_rom_inlineBox")
+	require(lure.require_path .. "rom//objects//lure_rom_inlineBlockBox")
 	require(lure.require_path .. "rom//objects//lure_rom_lineBox")
 	require(lure.require_path .. "rom//objects//lure_rom_boxComputedStyle")
 	require(lure.require_path .. "rom//objects//lure_rom_boxRenderStyle")	
@@ -40,17 +39,17 @@ function lure.rom.init()
 	lure.rom.boxTypes		= {}
 	lure.rom.boxTypes[1]	= "BLOCK_BOX"
 	lure.rom.boxTypes[2]	= "INLINE_BOX"		
-	lure.rom.boxTypes[3]	= "LINE_BOX"	
+	lure.rom.boxTypes[3]	= "LINE_BOX"
+	lure.rom.boxTypes[4]	= "INLINE_BLOCK_BOX"
 	
 	-- ROM FORMATING CONTEXTS
 	lure.rom.formatingContexts		= {}
 	lure.rom.formatingContexts[1] 	= "BLOCK"
 	lure.rom.formatingContexts[2] 	= "INLINE"
 	lure.rom.formatingContexts[3]	= "LINE"
+	lure.rom.formatingContexts[4] 	= "INLINE-BLOCK"
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.romTreeDump( pRootRomNode )
 	local indent = "  "
 	local indent_count = 0
@@ -85,9 +84,7 @@ function lure.rom.romTreeDump( pRootRomNode )
 	print("-----------------------------------------")
 	print("    ")	
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.appendChild( pRomNode, pNode, pSkipFormatChecks )
 	local self = pRomNode
 	
@@ -104,20 +101,24 @@ function lure.rom.appendChild( pRomNode, pNode, pSkipFormatChecks )
 	--do formating context based checks
 	if pSkipFormatChecks == false or pSkipFormatChecks == nil then
 		if pNode.boxType == 1 then --BLOCK_BOX				
-			if self.formatingContext == 1 then				
+			if self.formatingContext == 1 or self.formatingContext == 4 then				
 				return lure.rom.appendChild(self, pNode, true)
 			elseif self.formatingContext == 2 then
 				lure.throw(1, "cannot append block-level box inside inline formating context")
 				return self.parentNode.appendChild(pNode, true)
+			else
+				lure.throw(1, "unspecified ROM node appention error")
 			end
-		elseif pNode.boxType == 2 then --INLINE_BOX				
-			if self.formatingContext == 1 then --establish new inline formating context						
+		elseif pNode.boxType == 2 or pNode.boxType == 4 then --INLINE_BOX OR INLINE_BLOCK_BOX
+			if self.formatingContext == 1 or self.formatingContext == 4 then --establish new inline formating context						
 				local newBlockBox = lure.rom.newBlockBoxObject()
 				newBlockBox.formatingContext = 2
 				newBlockBox.appendChild(pNode, true)
 				self.appendChild(newBlockBox, true)
-			elseif self.formatingContext == 2 then --continue with inline formating context				
+			elseif self.formatingContext == 2 or self.formatingContext == 4 then --continue with inline formating context				
 				return self.appendChild( pNode, true )
+			else
+				lure.throw(1, "unspecified ROM node appention error")
 			end
 		elseif pNode.nodeType == 3 then --TEXT_NODE
 			if self.formatingContext == 2 then				
@@ -128,15 +129,15 @@ function lure.rom.appendChild( pRomNode, pNode, pSkipFormatChecks )
 				newBlockBox.formatingContext = 2
 				newBlockBox.appendChild(pNode)
 				self.appendChild(newBlockBox, true)
+			else
+				lure.throw(1, "unspecified ROM node appention error")			
 			end
 		end
 	end
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 -- ::: VIEWPORT SPECIFIC ROM METHODS                                             ::
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeViewportRenderStyleTop( pViewportNode )
 	self = pViewportNode
 	if self.nodeType == 2 then -- NODE_TYPE VIEWPORT_NODE		
@@ -154,9 +155,7 @@ function lure.rom.computeViewportRenderStyleTop( pViewportNode )
 		end		
 	end	
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeViewportRenderStyleLeft( pViewportNode )
 	self = pViewportNode
 	if self.nodeType == 2 then -- NODE_TYPE VIEWPORT_NODE		
@@ -174,9 +173,7 @@ function lure.rom.computeViewportRenderStyleLeft( pViewportNode )
 		end		
 	end	
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeViewportRenderStyleWidth( pViewportNode )
 	self = pViewportNode
 	if self.nodeType == 2 then -- NODE_TYPE VIEWPORT_NODE		
@@ -194,18 +191,19 @@ function lure.rom.computeViewportRenderStyleWidth( pViewportNode )
 		end		
 	end
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeViewportRenderStyleHeight( pViewportNode )
 	self = pViewportNode
 	if self.nodeType == 2 then -- NODE_TYPE VIEWPORT_NODE		
-		if self.renderStyle.height ~= nil then						
+		if self.renderStyle.height ~= nil then
+			if self.renderStyle.height == "auto" then
+				return love.graphics.getHeight()
+			end
 			local dec, meas = string.match(self.renderStyle.height, "([%d]+)(p?x?e?m?%%?)")												
 			if meas == "px" then
 				return tonumber(dec)
 			elseif meas == "%" then
-				return (dec * .01) * love.graphics.getHeight()
+				return tonumber( (dec * .01) * love.graphics.getHeight() )			
 			else
 				return tonumber(dec)
 			end
@@ -214,9 +212,7 @@ function lure.rom.computeViewportRenderStyleHeight( pViewportNode )
 		end		
 	end
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.getNodesByBoxType( pRomNode, pBoxType, pDepthLimit )
 	local self 			= pRomNode
 	local returnlist 	= lure.rom.nodeListObj.new()
@@ -269,11 +265,9 @@ function lure.rom.getNodesByNodeType( pRomNode, pNodeType, pDepthLimit )
 	
 	return returnlist
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 -- ::: BOX RENDERSTYLE METHODS                                                   ::
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStyleDisplay( pBoxNode )
 	local self = pBoxNode
 	
@@ -295,11 +289,17 @@ function lure.rom.computeBoxRenderStyleDisplay( pBoxNode )
 		else
 			return "inline"
 		end	
-	end
+	elseif self.boxType == 4 then
+		if self.renderStyle.display ~= nil then
+			if self.renderStyle.display == "inline-block" then
+				return "inline-block"
+			else
+				return "inline-block"
+			end
+		end
+	end	
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStyleBackgroundColor( pBoxNode )
 	local self = pBoxNode
 	if self.renderStyle.backgroundColor ~= nil then
@@ -322,9 +322,7 @@ function lure.rom.computeBoxRenderStyleBackgroundColor( pBoxNode )
 		end				
 	end	
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStyleColor( pBoxNode )
 	local self = pBoxNode
 	if self.renderStyle.color ~= nil then
@@ -347,9 +345,7 @@ function lure.rom.computeBoxRenderStyleColor( pBoxNode )
 		end				
 	end	
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStylePosition( pBoxNode )
 	local self = pBoxNode
 	if self.renderStyle.position == "static" then
@@ -378,9 +374,7 @@ function lure.rom.computeBoxRenderStylePosition( pBoxNode )
 		return "static"
 	end	
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStyleLeft( pBoxNode )
 	local self 		= pBoxNode	
 	local selfRS 	= self.renderStyle
@@ -411,7 +405,7 @@ function lure.rom.computeBoxRenderStyleLeft( pBoxNode )
 		else
 			return 0
 		end
-	elseif selfCS.display == "inline" then
+	elseif selfCS.display == "inline" or selfCS.display == "inline-block" then
 		if 	selfCS.position == "static" or 
 			selfCS.position == "" or			
 			selfCS.position == nil then			
@@ -430,9 +424,7 @@ function lure.rom.computeBoxRenderStyleLeft( pBoxNode )
 		end
 	end	
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStyleTop( pBoxNode )
 	local self		= pBoxNode
 	local selfRS 	= self.renderStyle
@@ -481,7 +473,7 @@ function lure.rom.computeBoxRenderStyleTop( pBoxNode )
 		elseif selfCS.position == "fixed" then			
 			--TODO: do fixed move
 		end
-	elseif selfCS.display == "inline" then		
+	elseif selfCS.display == "inline" or selfCS.display == "inline-block" then		
 		if 	selfCS.position == "static" or 			
 			selfCS.position == "" or 
 			selfCS.position == nil then			
@@ -493,9 +485,7 @@ function lure.rom.computeBoxRenderStyleTop( pBoxNode )
 		end
 	end
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStyleWidth( pBoxNode )
 	local self		= pBoxNode
 	local selfRS 	= self.renderStyle
@@ -525,7 +515,7 @@ function lure.rom.computeBoxRenderStyleWidth( pBoxNode )
 				return parentCS.width - (parentCS.padding[4] + parentCS.padding[2]) - (selfCS.margin[2] + selfCS.margin[4]) --inherit width			
 			end			
 		end
-	elseif selfCS.display == "inline" then
+	elseif selfCS.display == "inline" or selfCS.display == "inline-block" then
 		if selfRS.width ~= nil then
 			local dec, meas = string.match(selfRS.width, "([%d]+)(p?x?e?m?%%?)")
 			if meas == "%" then
@@ -545,9 +535,7 @@ function lure.rom.computeBoxRenderStyleWidth( pBoxNode )
 		end
 	end
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStyleHeight( pBoxNode )
 	local self		= pBoxNode
 	local selfRS 	= self.renderStyle
@@ -578,7 +566,7 @@ function lure.rom.computeBoxRenderStyleHeight( pBoxNode )
 				return height + (selfCS.padding[1] + selfCS.padding[3])
 			end			
 		end
-	elseif selfCS.display == "inline" then
+	elseif selfCS.display == "inline" or selfCS.display == "inline-block" then
 		if selfRS.height ~= nil then
 			local dec, meas = string.match(selfRS.height, "([%d]+)(p?x?e?m?%%?)")
 			if meas == "%" then
@@ -599,9 +587,7 @@ function lure.rom.computeBoxRenderStyleHeight( pBoxNode )
 		end
 	end	
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStyleMargin( pRomNode )
 	local self = pRomNode
 	local returnMargin = {0, 0, 0, 0}
@@ -625,9 +611,7 @@ function lure.rom.computeBoxRenderStyleMargin( pRomNode )
 	
 	return returnMargin
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 function lure.rom.computeBoxRenderStylePadding( pRomNode )
 	local self = pRomNode
 	local returnPadding = {0, 0, 0, 0}
@@ -651,7 +635,5 @@ function lure.rom.computeBoxRenderStylePadding( pRomNode )
 	
 	return returnPadding
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 lure.rom.init()

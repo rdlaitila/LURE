@@ -60,7 +60,7 @@ function lure.dom.HTMLStylesheetObj.new()
 		local char 				= function(charIndex) return  styleText:sub(charIndex,charIndex) end
 		
 		--remove all comment text
-		styleText = string.gsub(styleText, "/%*(.-)%*/", "")
+		styleText = string.gsub(styleText, "/%*(.-)%*/", "")		
 		
 		while index <= styleText:len() do
 			if char(index) ~= "{" and char(index) ~= "}" then

@@ -16,7 +16,7 @@ function lure.dom.createNodeListObj()
 		else
 			return self.nodes
 		end		
-	end
+	end	
 	self_mt.__tostring = function(t)
 		return "[object]:NodeList"
 	end

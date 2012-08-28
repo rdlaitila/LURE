@@ -1,7 +1,5 @@
 lure.rom.layout = {}
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 lure.rom.layout.doBlockChildLayouts = function(pRomNode)
 	local self = pRomNode
 	if self.hasChildNodes() then
@@ -21,9 +19,7 @@ lure.rom.layout.doBlockChildLayouts = function(pRomNode)
 		childRefList = nil
 	end
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 lure.rom.layout.doInlineChildLayouts = function(pRomNode)
 	local self = pRomNode
 	
@@ -70,18 +66,16 @@ lure.rom.layout.doInlineChildLayouts = function(pRomNode)
 		end				
 	end		
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-
 lure.rom.layout.doLineChildLayouts = function( pRomNode )
 	local self = pRomNode	
 	if self.hasChildNodes() then
 		local childLayoutResponse = lure.rom.newLayoutResponseObject()
 		local a = 1	
 		local layoutCompleted = false
-		while layoutCompleted == false do				
+		while layoutCompleted == false do			
 			local child = self.childNodes[a]
-			if child.nodeType == 1 then					
+			if child.nodeType == 1 then				
 				childLayoutResponse = child.layout()
 				if a > 1 then
 					if self.getTotalChildWidths(1, a) > self.computedStyle.width then														
@@ -125,5 +119,4 @@ lure.rom.layout.doLineChildLayouts = function( pRomNode )
 		end				
 	end
 end
-
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::

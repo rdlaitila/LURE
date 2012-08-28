@@ -11,7 +11,7 @@ function lure.dom.createHTMLDivElement()
 	self.nodeDesc	= "HTMLDivElement"
 	---------------------------------------------------------------------
 	self.style		= lure.dom.HTMLNodeStyleobj.new(self)
-	---------------------------------------------------------------------
+	---------------------------------------------------------------------	
 	
 	--===================================================================
 	-- MUTATORS                                                         =
@@ -20,8 +20,15 @@ function lure.dom.createHTMLDivElement()
 	--===================================================================
 	-- METHODS	                                                        =	
 	--===================================================================
-	self.attach = function()		
-		local newRomNode = lure.rom.newBlockBoxObject()
+	self.attach = function()
+		local newRomNode = {}
+		if self.computedStyle.display == "block" then
+			 newRomNode = lure.rom.newBlockBoxObject()
+		elseif self.computedStyle.display == "inline-block" then
+			newRomNode = lure.rom.newInlineBlockBoxObject()
+		else
+			newRomNode = lure.rom.newBlockBoxObject()
+		end	
 		
 		newRomNode.domNode 						= self
 		self.romNode							= newRomNode

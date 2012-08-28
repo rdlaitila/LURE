@@ -1,7 +1,33 @@
 lure.dom.css = {}
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 function lure.dom.css.init()
-	require(lure.require_path .. "dom//definitions/lure_dom_cssPropertyDefs")
+	require(lure.require_path .. "dom//definitions/lure_dom_cssDefs")
+end
+-- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+function lure.dom.css.dumpElementStyles(pElement)
+	local styles = {}
+	local elements = {}
+	
+	if type(pElement) == "table" then
+		elements = pElement
+	else
+		table.insert(elements,pElement)
+	end
+	
+	for a=1, table.getn(lure.dom.cssDefs) do
+		table.insert(styles, lure.dom.cssDefs[a].cssToStyle)
+	end
+	
+	for a=1, #elements do
+		print("------------------------------")
+		print("Dumping Element styles for:" .. tostring(elements[a].tagName))
+		print("------------------------------")
+		print("Inline Style:")
+		print("Computed Style:")
+		for b=1, #styles do
+			print("--" .. styles[b] .. ":" .. elements[a].computedStyle[styles[b]] )
+		end	
+	end
 end
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 function lure.dom.css.querySelectorAll(pElement, ...)
@@ -505,10 +531,10 @@ function lure.dom.css.applyCssRuleToElementComputedStyle(pCssRule, pElement)
 				if pElement.computedStyle ~= nil then
 					--print(pCssRule.cssText)
 					for styleName, styleValue in string.gmatch(pCssRule.cssText, "(.-):(.-);") do						
-						for a=1, table.getn(lure.dom.css_property_definitions) do
-							local def = lure.dom.css_property_definitions[a]							
+						for a=1, table.getn(lure.dom.cssDefs) do
+							local def = lure.dom.cssDefs[a]							
 							if def.name == styleName then																						
-								pElement.computedStyle[def.css_to_style_equiv] = styleValue																	
+								pElement.computedStyle[def.cssToStyle] = styleValue																	
 							end
 						end
 					end
@@ -518,33 +544,31 @@ function lure.dom.css.applyCssRuleToElementComputedStyle(pCssRule, pElement)
 	end
 end
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-function lure.dom.css.applyInlineStyleToElementComputedStyle( pElement )	
+function lure.dom.css.applyInlineStyleToElementComputedStyle( pElement )
+	--ensure element has a computedStyle object:
+	if pElement.computedStyle == nil then
+		pElement.computedStyle = lure.dom.createComputedStyleObj(pElement)
+	end
+	
 	if pElement.getAttribute("style") ~= nil then
 		for styleName, styleValue in string.gmatch(pElement.getAttribute("style"), "(.-):(.-);") do
 			--print(tostring(styleName) .. ":" .. tostring(styleValue))				
-			for a=1, table.getn(lure.dom.css_property_definitions) do				
-				local def = lure.dom.css_property_definitions[a]				
+			for a=1, table.getn(lure.dom.cssDefs) do				
+				local def = lure.dom.cssDefs[a]				
 				if def.name == styleName then					
-					pElement.computedStyle[def.css_to_style_equiv] = styleValue					
+					pElement.computedStyle[def.cssToStyle] = styleValue	
+					--print( tostring(pElement.computedStyle[def.cssToStyle]) )
 				end
-			end
+			end		
 		end
 	end	
 end
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-function lure.dom.css.computeCssCascade( pDocumentObj )
+function lure.dom.css.computeCssCascade( pDocumentObj, pStyleSheets )
 	--print("lure.dom.computeCssCascade()")
 	local pDomObj 		= pDocumentObj
-	local stylesheets 	= {} 
-	local sortedRules	= {}	
-	
-	-- GATHER ALL STYLESHEETS
-	if pDomObj.defaultStylesheet ~= nil then
-		table.insert(stylesheets, pDomObj.defaultStylesheet)
-	end
-	for k,v in ipairs(pDomObj.stylesheets.nodes) do
-		table.insert(stylesheets, v)
-	end	
+	local stylesheets 	= pStyleSheets
+	local sortedRules	= {}		
 	
 	-- GATHER ALL STYLESHEET CSS RULES
 	for k, v in ipairs(stylesheets) do		
@@ -556,7 +580,7 @@ function lure.dom.css.computeCssCascade( pDocumentObj )
 	--[[for k, v in ipairs(sortedRules) do
 		local s = sortedRules[k].style.specificity[1] .. sortedRules[k].style.specificity[2] .. sortedRules[k].style.specificity[3] .. sortedRules[k].style.specificity[4]
 		print(s .. ":" ..sortedRules[k].selectorText )
-	end]]	
+	end]]
 	
 	-- SORT CSS RULES BY SPECIFICITY ASC
 	local sortRules = function(a, b)		

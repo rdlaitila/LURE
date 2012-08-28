@@ -4,12 +4,14 @@ function lure.dom.createDocumentNodeObj()
 	--===================================================================
 	-- PROPERTIES                                                       =
 	--===================================================================	
-	self.nodeName 		= "#document"
+	self.nodeName 			= "#document"
 	---------------------------------------------------------------------
-	self.stylesheets 	= lure.dom.createNodeListObj()
+	self.defaultStyleSheet 	=  lure.dom.HTMLStylesheetObj.new()
 	---------------------------------------------------------------------
-	self.images			= lure.dom.createNodeListObj()
+	self.stylesheets 		= lure.dom.createNodeListObj()
 	---------------------------------------------------------------------
+	self.images				= lure.dom.createNodeListObj()
+	---------------------------------------------------------------------	
 	
 	--===================================================================
 	-- MUTATORS                                                         =
@@ -49,9 +51,9 @@ function lure.dom.createDocumentNodeObj()
 	---------------------------------------------------------------------
 	self.createStylesheet = function(pCssText)
 		local stylesheet = lure.dom.HTMLStylesheetObj.new()
-		if pCssText ~= nil and type(pCssText) == "string" then
+		if pCssText ~= nil and type(pCssText) == "string" then			
 			stylesheet.insertRule(pCssText)
-		end
+		end		
 		return stylesheet
 	end
 	---------------------------------------------------------------------

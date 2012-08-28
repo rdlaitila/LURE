@@ -38,11 +38,11 @@ function lure.dom.HTMLCssRule.new(pSelectorText, pDeclarationText)
 		for key, value in string.gmatch(pDeclaration, "(.-):(.-);") do			
 			local isValidKey = false
 			local cssDefinition = nil
-			for a=1, table.getn(lure.dom.css_property_definitions) do
-				if lure.dom.css_property_definitions[a].name == lure.trim(key) then
+			for a=1, table.getn(lure.dom.cssDefs) do
+				if lure.dom.cssDefs[a].name == lure.trim(key) then
 					isValidKey = true
-					cssDefinition = lure.dom.css_property_definitions[a]
-					self.style[cssDefinition.css_to_style_equiv] = lure.trim(value)
+					cssDefinition = lure.dom.cssDefs[a]
+					self.style[cssDefinition.cssToStyle] = lure.trim(value)
 					break
 				end				
 			end

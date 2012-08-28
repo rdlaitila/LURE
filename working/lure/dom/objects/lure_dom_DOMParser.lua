@@ -22,8 +22,6 @@ function lure.dom.DOMParser.new()
 	---------------------------------------------------------------------
 	self.document					= lure.dom.createDocumentNodeObj()
 	---------------------------------------------------------------------
-	self.document.defaultStylesheet = self.document.createStylesheet(love.filesystem.read(lure.require_path .. "res//css//defaultStylesheet.css"))
-	---------------------------------------------------------------------
 	
 	--====================================================================
 	-- METHODS	                                                         =	

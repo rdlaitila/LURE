@@ -62,9 +62,9 @@ function lure.dom.HTMLCssRuleStyleobj.getProperty(pObjRef, pPropertyName)
 	local isValidPropertyName	= false	
 	local cssDef				= nil
 	
-	for k1 in ipairs(lure.dom.css_property_definitions) do		
-		if pPropertyName == lure.dom.css_property_definitions[k1].css_to_style_equiv then			
-			cssDef = lure.dom.css_property_definitions[k1]
+	for k1 in ipairs(lure.dom.cssDefs) do		
+		if pPropertyName == lure.dom.cssDefs[k1].cssToStyle then			
+			cssDef = lure.dom.cssDefs[k1]
 			isValidPropertyName = true			
 		end
 	end
@@ -88,9 +88,9 @@ function lure.dom.HTMLCssRuleStyleobj.setProperty(pObjRef, pPropertyName, pPrope
 	local isValidPropertyValue	= false
 	local cssDef				= nil
 	
-	for k1 in ipairs(lure.dom.css_property_definitions) do		
-		if pPropertyName == lure.dom.css_property_definitions[k1].css_to_style_equiv then			
-			cssDef = lure.dom.css_property_definitions[k1]
+	for k1 in ipairs(lure.dom.cssDefs) do		
+		if pPropertyName == lure.dom.cssDefs[k1].cssToStyle then			
+			cssDef = lure.dom.cssDefs[k1]
 			isValidPropertyName = true			
 		end
 	end

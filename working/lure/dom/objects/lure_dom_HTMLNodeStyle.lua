@@ -52,8 +52,8 @@ end
 function lure.dom.HTMLNodeStyleobj.getProperty(pObjRef, pPropertyName)		
 	local self = pObjRef
 	local allowmatch = false
-	for k, v in pairs(lure.dom.css_property_definitions) do
-		if pPropertyName:upper() == lure.dom.css_property_definitions[k].css_to_style_equiv:upper() then
+	for k, v in pairs(lure.dom.cssDefs) do
+		if pPropertyName:upper() == lure.dom.cssDefs[k].cssToStyle:upper() then
 			allowmatch = true		
 		end			
 	end
@@ -82,8 +82,8 @@ function lure.dom.HTMLNodeStyleobj.setProperty(pObjRef, pPropertyName, pProperty
 	local allowmatch 			= false	
 	local propertyCssEquivalent = nil
 	local newstyle 				= ""
-	for k, v in pairs(lure.dom.css_property_definitions) do
-		if pPropertyName:upper() == lure.dom.css_property_definitions[k].css_to_style_equiv:upper() then
+	for k, v in pairs(lure.dom.cssDefs) do
+		if pPropertyName:upper() == lure.dom.cssDefs[k].cssToStyle:upper() then
 			allowmatch 				= true
 			propertyCssEquivalent	= v
 		end			

@@ -23,8 +23,7 @@ function lure.init()
 	-- SET SHORT OBJECT REFERENCES
 	if lure.use_short_objrefs == true then
 		window 			= lure.window
-		layers			= lure.layers
-		document 		= lure.document		
+		layers			= lure.layers		
 		alert 			= lure.window.alert
 		setTimeout 		= lure.window.setTimeout
 		setInterval 	= lure.window.setInterval
@@ -39,13 +38,13 @@ end
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 function lure.load(pObj)
 	--create new lure layer
-	local newLayer = lure.core.layers.new()
+	local newLayer = lure.core.layers.new()	
 	
 	--pass to layer load() method
 	if type(pObj) == "string" then
 		returnDocument = newLayer.load(pObj)		
 	end
-
+	
 	--add new layer to lure.layers
 	table.insert(lure.layers, newLayer)
 	
@@ -248,11 +247,11 @@ function lure.split(str, pat)
    return t
 end
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-function lure.trace (event, line)
+function lure.trace (event, line, delay)
 	local a = debug.getinfo(2).name
 	local b = debug.getinfo(2).source
 	print(tostring(a) .. ":::" .. tostring(b))
-	lure.sleep(.01)
+	lure.sleep(delay or .05)
 end
 -- ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 lure.init()

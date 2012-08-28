@@ -60,7 +60,8 @@ function lure.rom.newTextNodeObject( pTextData, pDoWrap, pPrincipleTextNode, pWr
 		principle.childTextNodes = lure.rom.nodeListObj.new()
 	end	
 	---------------------------------------------------------------------		
-	self.layout = function()		
+	self.layout = function()
+		--lure.throw(1, "callling layout on node: " .. tostring(self.nodeDesc) .. "(FC:".. tostring(self.formatingContext) .." BT:".. tostring(self.boxType) .." NT:".. tostring(self.nodeType) ..")")
 		self.layoutResponse = lure.rom.newLayoutResponseObject()
 	
 		self.computedStyle.display 	= "inline"
