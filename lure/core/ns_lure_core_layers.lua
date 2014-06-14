@@ -18,7 +18,7 @@ function lure.core.layers.new()
 	--===================================================================
 	self.load = function(pLoadObj)		
 		local srcText 	= love.filesystem.read(pLoadObj)		
-		local DOMParser	= lure.dom.DOMParser.new()
+		local DOMParser	= lure.dom.DOMParser:new()
 		local ROMParser	= lure.rom.newRomParserObject()
 				
 		--create local document object from parser
