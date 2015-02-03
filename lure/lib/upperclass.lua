@@ -25,7 +25,7 @@ SOFTWARE.
 local upperclass = {}
 
 -- Our version: Major.Minor.Patch
-upperclass.version = "0.3.0"
+upperclass.version = "0.3.1"
 
 --
 -- Define some static scope properties for use internally, respect existing global
@@ -564,7 +564,6 @@ end
 -- ClassRuntimeMetatable __call method
 --
 function ClassRuntimeMetatable.__call(...)
-    print("CALL: ", ...)
     -- Pack args
     local arguments = {...}
         
@@ -590,8 +589,6 @@ function ClassRuntimeMetatable.__call(...)
     setmetatable(instance, ClassRuntimeMetatable)
             
     -- Call class constructor
-    local passargs = {}
-    if #arguments > 1 then for a=2, #arguments do table.insert(passargs, arguments[a]) end end
     local __construct = self.__imp__.members["__construct"].value_default
     __construct(instance, unpack(arguments, 2, table.maxn(arguments)))
      

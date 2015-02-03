@@ -120,6 +120,16 @@ property : outerHeight {
 }
 
 --
+-- Returns the windows resource loader
+--
+property : resourceLoader {
+    nil;
+    get='public';
+    set='private';
+    type='table';
+}
+
+--
 -- Class Constructor
 --
 function private:__construct()
@@ -134,12 +144,16 @@ function private:__construct()
     
     -- Initialize Canvas
     self.canvas = love.graphics.newCanvas(self.outerWidth, self.outerHeight)
+    
+    -- Initialize Resource Loader
+    self.resourceLoader = lure.bom.ResourceLoader()
 end
 
 --
 -- Draw loop
 --
 function public:draw()
+    love.graphics.print(os.clock(), 0, 0)
     love.graphics.rectangle("line", self.left, self.top, self.outerWidth, self.outerHeight)
 end
 
@@ -147,6 +161,13 @@ end
 -- Update loop
 --
 function public:update(DT)
+    -- Update our resource loader for any async lodas
+    self.resourceLoader:update(DT)
+    
+    -- Update XMLHttpRequest for any async requests
+    lure.dom.XMLHttpRequest:update(DT)
+    
+    -- Process any events
     self:processEvents(false)
 end
 
@@ -193,12 +214,9 @@ end
 -- The open() method opens a new browser window.
 --
 function public:open(URI, NAME, SPECS, REPLACE)
-    local loaderResponse = lure.bom.ResourceLoader:load(URI)
-    if loaderResponse.result == true then
-        error("Successfully Loaded Resource")
-    else
-        error("Error Loading Resource")
-    end
+    local response = self.resourceLoader:load(URI, function(RESPONSE)
+        print("CALLBACK: ", RESPONSE.result, RESPONSE.code, RESPONSE.message)
+    end)    
 end
 
 -- 

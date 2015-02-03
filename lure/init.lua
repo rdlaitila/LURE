@@ -26,6 +26,7 @@ lure.bom.History                = (BASE_PATH..'bom.History')
 lure.bom.Location               = (BASE_PATH..'bom.Location')
 lure.bom.ResourceLoader         = (BASE_PATH..'bom.ResourceLoader')
 lure.bom.ResourceLoaderResponse = (BASE_PATH..'bom.ResourceLoaderResponse')
+lure.bom.ResourceLoaderThread   = (BASE_PATH..'bom.ResourceLoaderThread')
 
 -- Begin DOM DynamicRequire's
 lure.dom                        = lure.lib.DynamicRequire()
@@ -44,6 +45,7 @@ lure.dom.Node                   = (BASE_PATH..'dom.Node')
 lure.dom.NodeList               = (BASE_PATH..'dom.NodeList')
 lure.dom.ProcessingInstruction  = (BASE_PATH..'dom.ProcessingInstruction')
 lure.dom.Text                   = (BASE_PATH..'dom.Text')
+lure.dom.XMLHttpRequest         = (BASE_PATH..'dom.XMLHttpRequest')
 
 -- Return lure to the masses
 return lure

@@ -3,7 +3,7 @@ function love.load()
     
     window = lure.bom.Window()
     
-    window:open("file://res/html/about_blank.html")
+    window:open("file://lure/res/html/missing.html")
 end
 function love.update(dt)
     lure.lib.lovebird.update(dt)
@@ -26,4 +26,7 @@ function love.mousereleased(X, Y, BUTTON)
 end
 function love.textinput(STRING)
     browser:textinput(STRING)
+end
+function love.threaderror(t, e)
+     error(e)
 end
