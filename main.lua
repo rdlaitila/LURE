@@ -3,10 +3,9 @@ function love.load()
     
     window = lure.bom.Window()
     
-    window:open("file://lure/res/html/missing.html")
+    window:open("file://lure/res/html/about_blank.html")
 end
 function love.update(dt)
-    lure.lib.lovebird.update(dt)
     window:update(DT)
 end
 function love.draw()	

@@ -56,7 +56,7 @@ function public:load(URI, CALLBACK)
         return lure.bom.ResourceLoaderResponse(response.result, response.code, response.content, response.message)
     else
         -- Push th thread with the URI
-        self.threads[#self.threads].channel:push(URI)
+        self.threads[#self.threads].channel:supply(URI)
     end
 end
 

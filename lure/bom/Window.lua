@@ -1,8 +1,5 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
 -- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define Class
@@ -215,7 +212,9 @@ end
 --
 function public:open(URI, NAME, SPECS, REPLACE)
     local response = self.resourceLoader:load(URI, function(RESPONSE)
-        print("CALLBACK: ", RESPONSE.result, RESPONSE.code, RESPONSE.message)
+        print("CALLBACK: ", RESPONSE.result, RESPONSE.code, RESPONSE.message, RESPONSE.content)
+        local document = self.DOMParser:parseFromString(RESPONSE.content)
+        print(document.documentElement)
     end)    
 end
 

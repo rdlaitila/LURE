@@ -1,8 +1,4 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define Class

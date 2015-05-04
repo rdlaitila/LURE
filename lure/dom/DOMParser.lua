@@ -51,7 +51,8 @@ end
 --
 -- ParseFromString
 --
-function public:parseFromString(XML_STRING)    
+function public:parseFromString(XML_STRING)
+    print("XML_STRING:", XML_STRING)    
     local charindex = 1
     
     self.srcText = string.gsub(XML_STRING, "[\t]", "")
@@ -70,6 +71,8 @@ function public:parseFromString(XML_STRING)
                 charindex = self:openNode(charindex, "CDATASection")                    
             elseif self.srcText:sub(charindex+1, charindex+4) == "?xml" then
                 charindex = self:openNode(charindex, "XMLDeclaration")
+            elseif self.srcText:sub(charindex+1, charindex+8) == "!DOCTYPE" then
+                charindex = self:openNode(charindex, "DOCTYPE")
             else                    
                 charindex = self:openNode(charindex, "tag")
             end
@@ -109,8 +112,7 @@ function private:openNode(NODE_INDEX, NODE_TYPE)
         
         return NODE_INDEX + string.match(self.srcText, "(<.->)", NODE_INDEX):len()    
     elseif NODE_TYPE == "comment" then
-        local commentText = string.match(self.srcText, "<!%-%-(.-)%-%->", NODE_INDEX)                        
-        
+        local commentText = string.match(self.srcText, "<!%-%-(.-)%-%->", NODE_INDEX)   
         return NODE_INDEX + string.match(self.srcText, "(<!%-%-.-%-%->)", NODE_INDEX):len()
     elseif NODE_TYPE == "text" then
         local text = lure.lib.utils:trim(self.textNodeCharBuffer)                
@@ -138,6 +140,8 @@ function private:openNode(NODE_INDEX, NODE_TYPE)
         end
         
         return string.match(self.srcText, "<?xml(.-)?>", NODE_INDEX):len()
+    elseif NODE_TYPE == "DOCTYPE" then
+        return string.match(self.srcText, "<!DOCTYPE(.-)>", NODE_INDEX):len()
     end    
 end
 
