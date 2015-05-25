@@ -25,23 +25,43 @@ property : name {
 property : callback {
     nil;
     get='public';
-    set='public';
+    set='private';
     type='any';
+}
+
+--
+-- Determines if this event listener is invoked on the lure.dom.Event.CAPTURE_PHASE
+--
+property : useCapture { 
+    false;
+    get='public';
+    set='public';
 }
 
 --
 -- Class Constructor
 --
-function private:__construct(EVENT_NAME, CALLBACK)
-    self.name = EVENT_NAME
+function private:__construct(EVENT_NAME, CALLBACK, USE_CAPTURE)
+    self.name = EVENT_NAME    
+    
     self.callback = CALLBACK
+    
+    if USE_CAPTURE == nil then        
+        self.useCapture = false
+    else
+        self.useCapture = USE_CAPTURE
+    end
 end
 
 --
--- Calls the event listener callback
+-- This method is called whenever an event occurs of the type for which the EventListener interface was registered. 
 --
-function public:call(...)
-    return self.callback(...)
+function public:handleEvent(EVENT)    
+    if type(self.callback) == 'function' then        
+        self.callback(EVENT)
+    elseif type(self.callback) == 'table' then        
+        self.callback[1][self.callback[2]](self.callback[1], EVENT)
+    end
 end
 
 --

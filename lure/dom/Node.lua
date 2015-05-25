@@ -194,15 +194,20 @@ end
 --
 -- Appends a new child node to the end of the list of children of a node
 --
-function public:appendChild(NODE)    
+function public:appendChild(NODE) 
+    -- Set the incoming node's parentNode to self
     NODE.parentNode = self
     
+    -- Set the incoming node's ownerDocument
     NODE.ownerDocument = self.ownerDocument
     
+    -- Push the childNode
     self.childNodes:add(NODE)
     
+    -- Set self's firstChild
     self.firstChild = self.childNodes[1]
     
+    -- Set self's lastChild
     self.lastChild = self.childNodes[self.childNodes.length]
     
     -- If this node is a document node (type 9) and the appending node is 
@@ -210,6 +215,14 @@ function public:appendChild(NODE)
     if self.nodeType == 9 and NODE.nodeType == 1 then
         self.documentElement = NODE
     end
+    
+    -- Fire a DOM level 3 DOMNodeInsertedIntoDocument event        
+    self:dispatchEvent(
+        lure.dom.Event('DOMNodeInsertedIntoDocument', {            
+            target = NODE,
+            bubbles = true
+        })    
+    )
     
     return NODE
 end
@@ -382,22 +395,22 @@ end
 
 --
 -- Register an event handler of a specific event type on the EventTarget.
+-- @param EVENT_TYPE string
+-- @param CALLBACK 
 --
-function public:addEventListener(EVENT_TYPE, CALLBACK)
+function public:addEventListener(EVENT_TYPE, CALLBACK, USE_CAPTURE)
     -- Generate our EventListener object
-    local listener = lure.dom.EventListener(EVENT_TYPE, CALLBACK)
+    local listener = lure.dom.EventListener(EVENT_TYPE, CALLBACK, USE_CAPTURE)
     
     -- Insert into our list of eventListeners
     table.insert(self.eventListeners, listener)
-    
-    -- Begin to build the upward call stack
-    local callStack = {}
       
     return listener
 end
 
 --
 -- Removes an event listener from the EventTarget.
+-- @param LISTENER lure.dom.EventListener
 --
 function public:removeEventListener(LISTENER)
     local targetlistener = nil
@@ -418,19 +431,82 @@ end
 
 --
 -- Dispatch an event to this EventTarget.
+-- @param EVENT lure.dom.Event
 --
-function public:dispatchEvent(EVENT)    
-    if EVENT.target == self and EVENT.isCanceled == false then
-       for a=1, #self.eventListeners do 
-           print('Firing Event Listener')
-       end
-    else
-        if self:hasChildNodes() then
-            for a=1, self.childNodes.length do
-                
+function public:dispatchEvent(EVENT)
+    -- Build the upward callstack to top level node, generally the Document Object
+    local callstack = lure.dom.NodeList()
+    local currentNode = self
+    while true do
+        -- Check to ensure we do not have a recursive parentNode reference
+        if currentNode.parentNode == currentNode then
+            error("Node Parent References same node in DispatchEvent. Invalid DOM structure.")
+        end
+        
+        -- Lazy sanity check to ensure we don't lock the program if we have a recursive parentNode reference
+        if callstack.length > 10000 then
+            error("Callstack To Large In DispatchEvent")
+        end
+        
+        -- Check if we have a parent node
+        if currentNode.parentNode ~= nil then
+            currentNode = currentNode.parentNode
+            callstack:add(currentNode)
+        elseif currentNode.parentNode == nil then
+            EVENT.currentTarget = currentNode            
+            break
+        end
+    end
+    
+    -- Begin capturing phase
+    EVENT.eventPhase = lure.dom.Event.CAPTURING_PHASE
+    for a=callstack.length, 1, -1 do        
+        if EVENT.isCanceled == true then            
+            return
+        end
+        
+        -- Set the current Target
+        EVENT.currentTarget = callstack[a]
+        
+        -- Begin looping through event listeners        
+        for b=1, #callstack[a].eventListeners do            
+            if callstack[a] ~= EVENT.target then
+                EVENT.eventPhase = lure.dom.Event.CAPTURING_PHASE
+                if callstack[a].eventListeners[b].useCapture == true then
+                    if callstack[a].eventListeners[b].name == EVENT.type then
+                        callstack[a].eventListeners[b]:handleEvent(EVENT)
+                    end                    
+                end
+            elseif callstack[a] == EVENT.target then
+                EVENT.eventPhase = lure.dom.Event.AT_TARGET
+                if callstack[a].eventListeners[b].useCapture == false then
+                    if callstack[a].eventListeners[b].name == EVENT.type then
+                        callstack[a].eventListeners[b]:handleEvent(EVENT)
+                    end                    
+                end
             end
         end
     end
+    
+    -- Begin bubble phase
+    if EVENT.bubbles == false then
+        return
+    end
+    EVENT.eventPhase = lure.dom.Event.BUBBLING_PHASE
+    for a=1, callstack.length do        
+        if EVENT.isCanceled == true then            
+            return
+        end
+        
+        if callstack[a] ~= EVENT.target then
+            EVENT.eventPhase = lure.dom.Event.BUBBLING_PHASE
+            for b=1, #callstack[a].eventListeners do
+                if callstack[a].eventListeners[b].name == EVENT.type then
+                    callstack[a].eventListeners[b]:handleEvent(EVENT)
+                end
+            end
+        end
+    end    
 end
 
 --

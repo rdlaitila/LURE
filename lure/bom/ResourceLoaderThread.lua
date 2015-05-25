@@ -26,7 +26,7 @@ local response = {}
 
 -- Load the resource
 if url.scheme == "file" then
-    filepath = url.host..url.path  
+    local filepath = url.host..url.path  
     
     if love.filesystem.exists(filepath) then        
         response.result = true

@@ -57,8 +57,7 @@ end
 --
 -- ParseFromString
 --
-function public:parseFromString(XML_STRING)
-    print("XML_STRING:", XML_STRING)    
+function public:parseFromString(XML_STRING)    
     local charindex = 1
     
     self.srcText = string.gsub(XML_STRING, "[\t]", "")
@@ -68,17 +67,23 @@ function public:parseFromString(XML_STRING)
     while charindex <= self.srcText:len() do        
         if self:char(charindex) == "<" then                
             if self.textNodeCharBuffer:len() > 0 then                    
-                self:openNode(charindex, "text")                                 
+                self:openNode(charindex, "text") 
+                
             elseif self:char(charindex + 1) == "/" then                    
-                charindex = self:closeNode(charindex)                
+                charindex = self:closeNode(charindex) 
+                
             elseif self.srcText:sub(charindex+1, charindex+3) == "!--" then                    
                 charindex = self:openNode(charindex, "comment")
+                
             elseif self.srcText:sub(charindex+1, charindex+8) == "![CDATA[" then                    
-                charindex = self:openNode(charindex, "CDATASection")                    
+                charindex = self:openNode(charindex, "CDATASection")
+                
             elseif self.srcText:sub(charindex+1, charindex+4) == "?xml" then
                 charindex = self:openNode(charindex, "XMLDeclaration")
+                
             elseif self.srcText:sub(charindex+1, charindex+8) == "!DOCTYPE" then
                 charindex = self:openNode(charindex, "DOCTYPE")
+                
             else                    
                 charindex = self:openNode(charindex, "tag")
             end
@@ -95,27 +100,25 @@ end
 -- OpenNode
 --
 function private:openNode(NODE_INDEX, NODE_TYPE)    
-    if NODE_TYPE == "tag" then            
+    if NODE_TYPE == "tag" then
+        -- Obtain the full content between opening < and closing >
         local tagContent = string.match(self.srcText, "<(.-)>", NODE_INDEX)
+        
+        -- Obtain the tag name from tagContent
         local tagName = lure.lib.utils:trim(string.match(tagContent, "([%a%d]+)%s?", 1))            
             
+        -- Create a new Element from the tag and insert into node stack
         table.insert(self.openNodes, lure.dom.Element(tagName))                    
             
         -- get attributes from tagContent            
         for matchedAttr in string.gmatch(string.sub(tagContent,tagName:len()+1), "(.-=\".-\")") do            
             for attr, value in string.gmatch(matchedAttr, "(.-)=\"(.-)\"") do                
-                self.openNodes[#self.openNodes]:setAttribute(lure.lib.utils:trim(attr), lure.lib.utils:trim(value))                    
+                self.openNodes[#self.openNodes]:setAttribute(lure.lib.utils:trim(attr), lure.lib.utils:trim(value))
             end                
         end
-            
-        self.lastNodeReference = self.lastNodeReference:appendChild(self.openNodes[#self.openNodes])                        
-        local event = lure.dom.Event('DOMNodeAdded', {
-            type          = 'DOMNodeAdded',
-            target        = self.lastNodeReference,
-            currentTarget = self.document,
-            eventPhase    = lure.dom.Event.CAPTURING_PHASE
-        })    
-        self.document:dispatchEvent(event)
+        
+        -- Append new node to last node, and update lastNodeReference
+        self.lastNodeReference = self.lastNodeReference:appendChild(self.openNodes[#self.openNodes])
             
         -- check to see if the tag is self closing, else check against self.selfCloseElements            
         if string.match(tagContent, "/$") then                
@@ -123,6 +126,7 @@ function private:openNode(NODE_INDEX, NODE_TYPE)
             self:closeNode(NODE_INDEX)            
         end
         
+        -- Return our text position
         return NODE_INDEX + string.match(self.srcText, "(<.->)", NODE_INDEX):len()    
     elseif NODE_TYPE == "comment" then
         local commentText = string.match(self.srcText, "<!%-%-(.-)%-%->", NODE_INDEX)   
@@ -163,7 +167,7 @@ end
 --
 function private:closeNode(NODE_INDEX)
     local tagname = lure.lib.utils:trim(string.match(self.srcText, "/?([%a%d]+)%s?", NODE_INDEX))            
-    if lure.lib.utils:trim(self.openNodes[#self.openNodes].tagName:upper()) == lure.lib.utils:trim(tagname):upper() then            
+    if lure.lib.utils:trim(self.openNodes[#self.openNodes].tagName:upper()) == lure.lib.utils:trim(tagname):upper() then
         table.remove(self.openNodes, #self.openNodes)            
         self.lastNodeReference = self.lastNodeReference.parentNode
     end            

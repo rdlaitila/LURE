@@ -3,6 +3,7 @@ local window = nil
 
 function love.load()
     window = lure.bom.Window()
+    window.debugMessages = true
     window:resizeTo(love.graphics.getWidth(), 200)
     window:open("file://lure/res/html/about_blank.html")
 end

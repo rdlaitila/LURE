@@ -42,9 +42,18 @@ lure.dom.EventListener          = (BASE_PATH..'dom.EventListener')
 lure.dom.NamedNodeMap           = (BASE_PATH..'dom.NamedNodeMap')
 lure.dom.Node                   = (BASE_PATH..'dom.Node')
 lure.dom.NodeList               = (BASE_PATH..'dom.NodeList')
+lure.dom.MouseEvent             = (BASE_PATH..'dom.MouseEvent')
 lure.dom.ProcessingInstruction  = (BASE_PATH..'dom.ProcessingInstruction')
 lure.dom.Text                   = (BASE_PATH..'dom.Text')
 lure.dom.XMLHttpRequest         = (BASE_PATH..'dom.XMLHttpRequest')
+
+-- Begin CSSOM DynamicRequire's
+lure.cssom                  = lure.lib.DynamicRequire()
+lure.cssom.COLORS           = (BASE_PATH..'cssom.Colors')
+lure.cssom.CSSRule          = (BASE_PATH..'cssom.CSSRule')
+lure.cssom.CSSStyleSheet    = (BASE_PATH..'cssom.CSSStyleSheet')
+lure.cssom.CSSParser        = (BASE_PATH..'cssom.CSSParser')
+lure.cssom.Stylesheet       = (BASE_PATH..'cssom.Stylesheet')
 
 -- Return lure to the masses
 return lure

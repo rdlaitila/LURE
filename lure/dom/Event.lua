@@ -150,6 +150,8 @@ property : isCanceled {
 function private:__construct(EVENT_TYPE, EVENT_INIT)
     self.type = EVENT_TYPE
     
+    self.eventPhase = lure.dom.Event.NONE
+    
     for key, value in pairs(EVENT_INIT) do
         self[key] = value
     end
@@ -159,21 +161,25 @@ end
 -- Cancels the event (if it is cancelable).
 --
 function public:preventDefault()
-    self.isCanceled = true
+    self.defaultPrevented = true
 end
 
 --
 -- For this particular event, no other listener will be called. Neither those attached on the same element, nor those attached on elements which will be traversed later (in capture phase, for instance)
 --
 function public:stopImmediatePropagation()
-    self.isCanceled = true
+    if self.cancelable then
+        self.isCanceled = true
+    end
 end
 
 --
 -- Stops the propagation of events further along in the DOM.
 --
 function public:stopPropagation()
-    self.isCanceled = true
+    if self.cancelable then
+        self.isCanceled = true
+    end
 end
 
 -- 

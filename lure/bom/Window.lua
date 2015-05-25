@@ -16,6 +16,16 @@ property : canvas {
 }
 
 --
+-- Enabled debug messages
+--
+property : debugMessages {
+    false;
+    get='public';
+    set='public';
+    type='boolean';
+}
+
+--
 -- Returns the Document object for the window
 --
 property : document {
@@ -53,16 +63,6 @@ property : innerHeight {
     get='public';
     set='private';
     type='number';
-}
-
---
--- Returns the list of events in the event stack
---
-property : eventStack {
-    nil;
-    get='public';
-    set='private';
-    type='table';
 }
 
 --
@@ -132,9 +132,6 @@ function private:__construct()
     -- Create a new DOMParser
     self.DOMParser = lure.dom.DOMParser()
     
-    -- Initialize Event Stack
-    self.eventStack = {}
-    
     -- Initialize Canvas
     self.canvas = love.graphics.newCanvas(self.outerWidth, self.outerHeight)
     
@@ -159,32 +156,6 @@ function public:update(DT)
     
     -- Update XMLHttpRequest for any async requests
     lure.dom.XMLHttpRequest:update(DT)
-    
-    -- Process any events
-    self:processEvents(false)
-end
-
---
--- Processes event objects in the stack
---
-function public:processEvents(PROCESS_ALL)
-    if PROCESS_ALL == nil then
-        PROCESS_ALL = false
-    end
-    
-    while #self.eventStack > 0 do
-        local event = self.eventStack[1]
-        
-        print("PROCESSING EVENT: ", event.type)
-        
-        -- EVENT PROCESSING DONE, REMOVE FROM eventStack
-        table.remove(self.eventStack, 1)
-        
-        -- Stop if we are not proceessing all events
-        if PROCESS_ALL == false then            
-            break
-        end
-    end
 end
 
 --
@@ -193,6 +164,20 @@ end
 function public:resizeTo(WIDTH, HEIGHT)
     self.outerWidth = WIDTH
     self.outerHeight = HEIGHT
+end
+
+--
+-- Love2d Mouse Pressed Callback
+--
+function public:mousepressed(X, Y, BUTTON)    
+    -- nothing yet
+end
+
+--
+-- Love2d Mouse Released Callback
+--
+function public:mousereleased(X, Y, BUTTON)
+    -- nothing yet
 end
 
 --
@@ -208,20 +193,45 @@ end
 --
 function public:open(URI)
     self.resourceLoader:load(URI, function(RESPONSE)
-        --print("CALLBACK: ", RESPONSE.result, RESPONSE.code, RESPONSE.message, RESPONSE.content)
+        if self.debugMessages then
+            print("CALLBACK: ", RESPONSE.result, RESPONSE.code, RESPONSE.message, RESPONSE.content)
+        end
         
-        print(self)
-        
+        -- Reinitialize our DOM Parser
         self.DOMParser = lure.dom.DOMParser()
         
+        -- Set window document to DOMParser document
         self.document = self.DOMParser.document
         
-        self.DOMParser:parseFromString(RESPONSE.content)    
+        -- Setup DOM events
+        self.document:addEventListener('click',         {self, 'onDomEvent'}, false)
+        self.document:addEventListener('contextmenu',   {self, 'onDomEvent'}, false)
+        self.document:addEventListener('dblclick',      {self, 'onDomEvent'}, false)
+        self.document:addEventListener('DOMNodeInsertedIntoDocument', {self, 'onDomEvent'}, false)
+        self.document:addEventListener('mousedown',     {self, 'onDomEvent'}, false)
+        self.document:addEventListener('mouseup',       {self, 'onDomEvent'}, false)
+        self.document:addEventListener('mousemove',     {self, 'onDomEvent'}, false)                
+        self.document:addEventListener('mouseover',     {self, 'onDomEvent'}, false)
+        self.document:addEventListener('mouseout',      {self, 'onDomEvent'}, false)
+        self.document:addEventListener('mouseenter',    {self, 'onDomEvent'}, false)
+        self.document:addEventListener('mouseleave',    {self, 'onDomEvent'}, false)        
         
-        self.document:addEventListener('DOMNodeAdded', function(DATA)
-            print(DATA)
-        end)
+        -- Begin parsing document
+        self.DOMParser:parseFromString(RESPONSE.content)    
     end)    
+end
+
+function public:onDomEvent(EVENT)
+    if self.debugMessages then
+        print(EVENT.type, EVENT.eventPhase, EVENT.currentTarget.nodeName, EVENT.target.nodeName)
+    end
+    
+    if EVENT.type == 'DOMNodeInsertedIntoDocument' then
+        if EVENT.target.nodeType == 1 then
+            
+            print(EVENT.target.tagName)
+        end
+    end
 end
 
 -- 
