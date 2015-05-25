@@ -36,46 +36,6 @@ property : history {
 }
 
 --
--- If we are going to display the browser UI
---
-property : UIEnabled {
-    false;
-    get='public';
-    set='public';
-    type'boolean';
-}
-
---
--- Holds the browser's UI Frame Object
---
-property : UIFrame {
-    nil;
-    get='public';
-    set='private';
-    type='any';
-}
-
---
--- Holds the browsers UI Tab Object
---
-property : UITabs {
-    nil;
-    get='public';
-    set='private';
-    type='any';
-}
-
---
--- Holds the browsers UI Input Object
---
-property : UIInput {
-    nil;
-    get='public';
-    set='private';
-    type='any';
-}
-
---
 -- Class Constructor
 --
 function private:__construct()
@@ -87,33 +47,12 @@ function private:__construct()
     
     -- Generate History Object
     self.history = lure.bom.History(self)
-    
-    -- Create primary UI Frame
-    self.UIFrame = lure.lib.loveframes.Create("frame")
-    self.UIFrame:SetName("LURE Browser")
-    self.UIFrame:SetSize(love.graphics.getWidth(), love.graphics.getHeight())
-    self.UIFrame:SetPos(0, 0)
-    
-    -- Create UI Input
-    self.UIInput = lure.lib.loveframes.Create("textinput", self.UIFrame)
-    self.UIInput:SetSize(love.graphics.getWidth() - 10, 26)
-    self.UIInput:SetPos(5, 30)
-    
-    -- Create UI Tabs
-    self.UITabs = lure.lib.loveframes.Create("tabs", self.UIFrame)    
-    self.UITabs:SetSize(love.graphics.getWidth() - 10 , love.graphics.getHeight() - 65)
-    self.UITabs:SetPos(5, 60)
 end
 
 --
 -- draw loop
 --
 function public:draw()
-    -- Draw browser UI if enabled
-    if self.UIEnabled == true then
-        lure.lib.loveframes.draw()
-    end
-    
     -- Call draw on all child windows
     for a=1, #self.windows do
         self.windows[a]:draw()
@@ -124,11 +63,6 @@ end
 -- update loop
 --
 function public:update(DT)
-    -- Update browser UI if enabled
-    if self.UIEnabled == true then
-        lure.lib.loveframes.update(DT)
-    end
-    
     -- Call update on all child windows
     for a=1, #self.windows do
         self.windows[a]:update(DT)
@@ -139,50 +73,30 @@ end
 -- LOVE Keypressed Callback
 --
 function public:keypressed(KEY, IS_REPEAT)
-    -- Send keypresses if UI is enabled
-    if self.UIEnabled == true then
-        lure.lib.loveframes.keypressed(KEY, IS_REPEAT)
-    end
 end
 
 --
 -- LOVE keyreleased Callback
 --
 function public:keyreleased(KEY)
-    -- Send keyreleased if UI is enabled
-    if self.UIEnabled == true then
-        lure.lib.loveframes.keyreleased(KEY)
-    end
 end
 
 --
 -- LOVE mouspressed Callback
 --
 function public:mousepressed(X, Y, BUTTON)
-    -- Send mousepressed if UI is enabled
-    if self.UIEnabled == true then
-        lure.lib.loveframes.mousepressed(X, Y, BUTTON)
-    end
 end
 
 --
 -- LOVE mousereleased Callback
 --
 function public:mousereleased(X, Y, BUTTON)
-    -- Send mousreleased if UI is enabled
-    if self.UIEnabled == true then
-        lure.lib.loveframes.mousereleased(X, Y, BUTTON)
-    end
 end
 
 --
 -- LOVE textinput Callback
 --
 function public:textinput(STRING)
-    -- Send textinput if UI is enabled
-    if self.UIEnabled == true then
-        lure.lib.loveframes.textinput(STRING)
-    end
 end
 
 --
@@ -224,20 +138,11 @@ end
 -- Load a URL into the document, with the given referrer and character set.
 --
 function public:loadURI(URI, REFFERER, CHARSET)
-    -- Create the new window object
-    local newwindow = lure.bom.Window()
-    
     -- Insert the new window object into our list of windows
-    table.insert(self.windows, newwindow)
+    table.insert(self.windows, lure.bom.Window())
     
-    -- Create a UI panel for the window
-    local windowtabpanel = lure.lib.loveframes.Create("panel")
-    
-    -- Add the panel to our UI Tabs
-    self.UITabs:AddTab("Window "..#self.windows, windowtabpanel)
-    
-    -- Set our browser title
-    self.UIFrame:SetName("Lure Browser - "..#self.windows.." Windows")
+    --Invoke windiow open() method to load document
+    self.windows[#self.windows]:open(URI)
     
     -- Return our newly created Window
     return newwindow

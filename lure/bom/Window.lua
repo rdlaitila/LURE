@@ -1,10 +1,9 @@
--- Require dependencies
 local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define Class
 --
-local Window = lure.lib.upperclass:define("BOMWindow", lure.dom.Node)
+local Window = lure.lib.upperclass:define("BOMWindow")
 
 --
 -- Returns the window canvas
@@ -22,7 +21,7 @@ property : canvas {
 property : document {
     nil;
     get='public';
-    set='private';
+    set='public';
     type='any';
 }
 
@@ -32,7 +31,7 @@ property : document {
 property : DOMParser {
     nil;
     get='public';
-    set='private';
+    set='public';
     type='any';
 }
 
@@ -129,10 +128,7 @@ property : resourceLoader {
 --
 -- Class Constructor
 --
-function private:__construct()
-    -- Construct parent
-    self:__constructparent(901)
-    
+function private:__construct()    
     -- Create a new DOMParser
     self.DOMParser = lure.dom.DOMParser()
     
@@ -210,11 +206,21 @@ end
 --
 -- The open() method opens a new browser window.
 --
-function public:open(URI, NAME, SPECS, REPLACE)
-    local response = self.resourceLoader:load(URI, function(RESPONSE)
-        print("CALLBACK: ", RESPONSE.result, RESPONSE.code, RESPONSE.message, RESPONSE.content)
-        local document = self.DOMParser:parseFromString(RESPONSE.content)
-        print(document.documentElement)
+function public:open(URI)
+    self.resourceLoader:load(URI, function(RESPONSE)
+        --print("CALLBACK: ", RESPONSE.result, RESPONSE.code, RESPONSE.message, RESPONSE.content)
+        
+        print(self)
+        
+        self.DOMParser = lure.dom.DOMParser()
+        
+        self.document = self.DOMParser.document
+        
+        self.DOMParser:parseFromString(RESPONSE.content)    
+        
+        self.document:addEventListener('DOMNodeAdded', function(DATA)
+            print(DATA)
+        end)
     end)    
 end
 

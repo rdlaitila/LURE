@@ -1,8 +1,4 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define Class
@@ -138,6 +134,15 @@ property : isTrusted {
     type='boolean';
 }
 
+-- 
+-- Indicates that st
+--
+property : isCanceled {
+    false;
+    get='public';
+    set='private';
+    type='boolean';
+}
 
 --
 -- Class Constructor
@@ -154,28 +159,21 @@ end
 -- Cancels the event (if it is cancelable).
 --
 function public:preventDefault()
-    error("Function Not Implimented")
+    self.isCanceled = true
 end
 
 --
 -- For this particular event, no other listener will be called. Neither those attached on the same element, nor those attached on elements which will be traversed later (in capture phase, for instance)
 --
 function public:stopImmediatePropagation()
-    error("Function Not Implimented")
+    self.isCanceled = true
 end
 
 --
 -- Stops the propagation of events further along in the DOM.
 --
 function public:stopPropagation()
-    error("Function Not Implimented")
-end
-
---
--- Processes the event flow
---
-function public:process()
-    
+    self.isCanceled = true
 end
 
 -- 

@@ -1,8 +1,4 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define class
@@ -423,19 +419,18 @@ end
 --
 -- Dispatch an event to this EventTarget.
 --
-function public:dispatchEvent(EVENT)
-    -- Ensure that we fail if we do not have an ownerDocument as the eventStack lives
-    -- in the ownerDocument
-    if self.ownerDocument == nil then
-        error("Cannot Dispatch Node Event Without A ownerDocument")
+function public:dispatchEvent(EVENT)    
+    if EVENT.target == self and EVENT.isCanceled == false then
+       for a=1, #self.eventListeners do 
+           print('Firing Event Listener')
+       end
+    else
+        if self:hasChildNodes() then
+            for a=1, self.childNodes.length do
+                
+            end
+        end
     end
-    
-    -- Set the event target, and current target to self
-    EVENT.target = self
-    EVENT.currentTarget = self
-    
-    -- Insert the Event object into the ownerDocument eventStack
-    table.insert(self.ownerDocument.eventStack, EVENT)
 end
 
 --

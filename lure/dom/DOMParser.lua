@@ -32,7 +32,11 @@ private.textNodeCharBuffer = ""
 --
 -- DOM Document
 --
-private.document = nil
+property : document {
+    nil;
+    get='public';
+    set='private';
+}   
 
 --
 -- Last Node Reference
@@ -42,9 +46,11 @@ private.lastNodeReference = nil
 --
 -- Class Constructor
 --
-function private:__construct()        
+function private:__construct(DOM_DOCUMENT)
     self.document = lure.dom.Document()
-    self.lastNodeReference = self.document    
+    
+    self.lastNodeReference = self.document
+    
     self.openNodes = {}
 end
 
@@ -103,6 +109,13 @@ function private:openNode(NODE_INDEX, NODE_TYPE)
         end
             
         self.lastNodeReference = self.lastNodeReference:appendChild(self.openNodes[#self.openNodes])                        
+        local event = lure.dom.Event('DOMNodeAdded', {
+            type          = 'DOMNodeAdded',
+            target        = self.lastNodeReference,
+            currentTarget = self.document,
+            eventPhase    = lure.dom.Event.CAPTURING_PHASE
+        })    
+        self.document:dispatchEvent(event)
             
         -- check to see if the tag is self closing, else check against self.selfCloseElements            
         if string.match(tagContent, "/$") then                
