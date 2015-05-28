@@ -8,16 +8,16 @@ local lure = {}
 lure.version = "0.1.0"
 
 -- Require some core dependencies
-lure.lib                = require(BASE_PATH..'lib.dynamicrequire')()
+lure.lib                = require(BASE_PATH..'lib.namespace')()
 lure.lib.upperclass     = (BASE_PATH..'lib.upperclass')
 lure.lib.loveframes     = (BASE_PATH..'lib.loveframes')
 lure.lib.lovebird       = (BASE_PATH..'lib.lovebird')
-lure.lib.DynamicRequire = (BASE_PATH..'lib.dynamicrequire')
+lure.lib.namespace      = (BASE_PATH..'lib.namespace')
 lure.lib.url            = (BASE_PATH..'lib.url')
 lure.lib.utils          = (BASE_PATH..'lib.utils')
 
 -- Begin BOM DynamicRequire's
-lure.bom                        = lure.lib.DynamicRequire()
+lure.bom                        = lure.lib.namespace()
 lure.bom.Browser                = (BASE_PATH..'bom.Browser')
 lure.bom.Window                 = (BASE_PATH..'bom.Window')
 lure.bom.Navigator              = (BASE_PATH..'bom.Navigator')
@@ -28,7 +28,7 @@ lure.bom.ResourceLoaderResponse = (BASE_PATH..'bom.ResourceLoaderResponse')
 lure.bom.ResourceLoaderThread   = (BASE_PATH..'bom.ResourceLoaderThread')
 
 -- Begin DOM DynamicRequire's
-lure.dom                        = lure.lib.DynamicRequire()
+lure.dom                        = lure.lib.namespace()
 lure.dom.Attribute              = (BASE_PATH..'dom.Attribute')
 lure.dom.CDATA                  = (BASE_PATH..'dom.Cdata')
 lure.dom.Comment                = (BASE_PATH..'dom.Comment')
@@ -48,7 +48,7 @@ lure.dom.Text                   = (BASE_PATH..'dom.Text')
 lure.dom.XMLHttpRequest         = (BASE_PATH..'dom.XMLHttpRequest')
 
 -- Begin CSSOM DynamicRequire's
-lure.cssom                  = lure.lib.DynamicRequire()
+lure.cssom                  = lure.lib.namespace()
 lure.cssom.COLORS           = (BASE_PATH..'cssom.Colors')
 lure.cssom.CSSRule          = (BASE_PATH..'cssom.CSSRule')
 lure.cssom.CSSStyleSheet    = (BASE_PATH..'cssom.CSSStyleSheet')
