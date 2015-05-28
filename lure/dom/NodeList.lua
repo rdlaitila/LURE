@@ -32,7 +32,14 @@ function private:__index(KEY)
         return #self.nodes
     end
     
-    return UPPERCLASS_DEFAULT_BEHAVIOR
+    return lure.lib.upperclass.DEFAULT_BEHAVIOR
+end
+
+--
+-- __len metamethod
+--
+function private:__len()
+    return #self.nodes
 end
 
 --

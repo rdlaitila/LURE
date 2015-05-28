@@ -22,41 +22,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ]]
 
+--
+-- Here We Go! :)
+--
 local upperclass = {}
 
+--
 -- Our version: Major.Minor.Patch
-upperclass.version = "0.3.1"
+--
+upperclass.VERSION = "0.4.0-dev"
 
 --
--- Define some static scope properties for use internally, respect existing global
+-- Define some internal constants
 --
-if UPPERCLASS_SCOPE_PRIVATE     == nil then UPPERCLASS_SCOPE_PRIVATE = {} end
-if UPPERCLASS_SCOPE_PROTECTED   == nil then UPPERCLASS_SCOPE_PROTECTED = {} end
-if UPPERCLASS_SCOPE_PUBLIC      == nil then UPPERCLASS_SCOPE_PUBLIC = {} end
-if UPPERCLASS_SCOPE_NOBODY      == nil then UPPERCLASS_SCOPE_NOBODY = {} end
-
---
--- Define some member type properties for use internally, respect existing global
---
-if UPPERCLASS_MEMBER_TYPE_PROPERTY == nil then UPPERCLASS_MEMBER_TYPE_PROPERTY = {} end
-if UPPERCLASS_MEMBER_TYPE_FUNCTION == nil then UPPERCLASS_MEMBER_TYPE_FUNCTION = {} end
-
--- 
--- Define some types, respect existing global
---
-if UPPERCLASS_TYPE_ANY      == nil then UPPERCLASS_TYPE_ANY         = {string='any'} end
-if UPPERCLASS_TYPE_STRING   == nil then UPPERCLASS_TYPE_STRING      = {string='string'} end
-if UPPERCLASS_TYPE_TABLE    == nil then UPPERCLASS_TYPE_TABLE       = {string='table'} end
-if UPPERCLASS_TYPE_FUNCTION == nil then UPPERCLASS_TYPE_FUNCTION    = {string='function'} end
-if UPPERCLASS_TYPE_NUMBER   == nil then UPPERCLASS_TYPE_NUMBER      = {string='number'} end
-if UPPERCLASS_TYPE_USERDATA == nil then UPPERCLASS_TYPE_USERDATA    = {string='userdata'} end
-if UPPERCLASS_TYPE_NIL      == nil then UPPERCLASS_TYPE_NIL         = {string='nil'} end
-if UPPERCLASS_TYPE_BOOLEAN  == nil then UPPERCLASS_TYPE_BOOLEAN     = {string='boolean'} end
-
---
--- Global to indicate during metamethod calls that we wish to continue with default lookup behaviors, respect existing global
---
-if UPPERCLASS_DEFAULT_BEHAVIOR == nil then UPPERCLASS_DEFAULT_BEHAVIOR = {} end
+upperclass.DEFAULT_BEHAVIOR       = {}
+upperclass.SCOPE_PRIVATE          = {string='private'}
+upperclass.SCOPE_PROTECTED        = {string='protected'}
+upperclass.SCOPE_PUBLIC           = {string='public'} 
+upperclass.SCOPE_NOBODY           = {string='nobody'}
+upperclass.MEMBER_TYPE_PROPERTY   = {string='property'}
+upperclass.MEMBER_TYPE_METHOD     = {string='method'}
+upperclass.TYPE_ANY               = {string='any'}
+upperclass.TYPE_STRING            = {string='string'}
+upperclass.TYPE_TABLE             = {string='table'}
+upperclass.TYPE_FUNCTION          = {string='function'}
+upperclass.TYPE_NUMBER            = {string='number'}
+upperclass.TYPE_USERDATA          = {string='userdata'}
+upperclass.TYPE_NIL               = {string='nil'}
+upperclass.TYPE_BOOLEAN           = {string='boolean'}
+upperclass.TYPE_CLASS             = {string='class'}
+upperclass.D_INVALID_EXISTING_MEMBER_ASSIGNMENT = {errno=0,    stage="definition",  message="Attempt to redefine existing member '%s' in class '%s' is disallowed"}; 
+upperclass.D_INVALID_PROPERTY_TYPE_ASSIGNMENT   = {errno=1,    stage="definition",  message="Attempt to define class member property '%s' as type '%s' when supplied value is of type '%s' is disallowed"};
+upperclass.R_INVALID_MEMBER_LOOKUP              = {errno=200,  stage="runtime",     message="Attempt to get class member '%s' in class '%s' is disallowed. No such member defined"};
+upperclass.R_INVALID_SCOPE_ACCESS               = {errno=201,  stage="runtime",     message="Attempt to retrieve '%s' member '%s' from outside of class '%s' is disallowed"};    
+upperclass.R_INVALID_MEMBER_ASSIGNMENT          = {errno=202,  stage="runtime",     message="Attempt to set '%s' member '%s' in class '%s' is disallowed"};
+upperclass.R_INVALID_MEMBER_SCOPED_ASSIGNMENT   = {errno=203,  stage="runtime",     message="Attempt to set '%s' member '%s' from outside of class '%s' is disallowed"};
+upperclass.R_INVALID_MEMBER_TYPE_ASSIGNMENT     = {errno=204,  stage="runtime",     message="Attempt to set '%s' member '%s' of type '%s' with type '%s' in class '%s' is disallowed"};
+upperclass.R_INVALID_METAMETHOD_LOOKUP          = {errno=205,  stage="runtime",     message="Attempt to call '%s' metamethod on class '%s' is disallowed. No such metamethod defined"};
 
 --
 -- Holds the metatable used during the class definition stage
@@ -67,6 +69,20 @@ local ClassDefinitionMetatable = {classDefinitionTable = nil}
 -- Holds the metatable used during class runtime operations
 --
 local ClassRuntimeMetatable = {}
+
+--
+-- Throws an upperclass error
+--
+function upperclass:throw(ERROR, ...)
+    local errorname = nil
+    for key, value in pairs(upperclass) do
+        if upperclass[key] == ERROR then
+            errorname = key
+            break
+        end
+    end    
+    error(errorname..": "..ERROR.message:format(...))
+end
 
 --
 -- Dumps class members
@@ -117,31 +133,31 @@ function upperclass:dumpClassMembers(CLASS, SORT_COLUMN)
     -- Replace values in dumptable with friendly names
     for a=1, #dumpTable do
         for b=1, #dumpTable[a] do
-            if dumpTable[a][b] == UPPERCLASS_MEMBER_TYPE_FUNCTION then
+            if dumpTable[a][b] == upperclass.MEMBER_TYPE_METHOD then
                 dumpTable[a][b] = "method"
-            elseif dumpTable[a][b] == UPPERCLASS_MEMBER_TYPE_PROPERTY then
+            elseif dumpTable[a][b] == upperclass.MEMBER_TYPE_PROPERTY then
                 dumpTable[a][b] = "property"
-            elseif dumpTable[a][b] == UPPERCLASS_SCOPE_PUBLIC then
+            elseif dumpTable[a][b] == upperclass.SCOPE_PUBLIC then
                 dumpTable[a][b] = "public"
-            elseif dumpTable[a][b] == UPPERCLASS_SCOPE_PRIVATE then
+            elseif dumpTable[a][b] == upperclass.SCOPE_PRIVATE then
                 dumpTable[a][b] = "private"
-            elseif dumpTable[a][b] == UPPERCLASS_SCOPE_PROTECTED then
+            elseif dumpTable[a][b] == upperclass.SCOPE_PROTECTED then
                 dumpTable[a][b] = "protected"
-            elseif dumpTable[a][b] == UPPERCLASS_SCOPE_NOBODY then
+            elseif dumpTable[a][b] == upperclass.SCOPE_NOBODY then
                 dumpTable[a][b] = "nobody"
-            elseif dumpTable[a][b] == UPPERCLASS_TYPE_STRING then
+            elseif dumpTable[a][b] == upperclass.TYPE_STRING then
                 dumpTable[a][b] = "string"
-            elseif dumpTable[a][b] == UPPERCLASS_TYPE_NUMBER then
+            elseif dumpTable[a][b] == upperclass.TYPE_NUMBER then
                 dumpTable[a][b] = "number"
-            elseif dumpTable[a][b] == UPPERCLASS_TYPE_TABLE then
+            elseif dumpTable[a][b] == upperclass.TYPE_TABLE then
                 dumpTable[a][b] = "table"
-            elseif dumpTable[a][b] == UPPERCLASS_TYPE_BOOLEAN then
+            elseif dumpTable[a][b] == upperclass.TYPE_BOOLEAN then
                 dumpTable[a][b] = "boolean"
-            elseif dumpTable[a][b] == UPPERCLASS_TYPE_FUNCTION then
+            elseif dumpTable[a][b] == upperclass.TYPE_FUNCTION then
                 dumpTable[a][b] = "function"
-            elseif dumpTable[a][b] == UPPERCLASS_TYPE_NIL then
+            elseif dumpTable[a][b] == upperclass.TYPE_NIL then
                 dumpTable[a][b] = "nil"
-            elseif dumpTable[a][b] == UPPERCLASS_TYPE_ANY then
+            elseif dumpTable[a][b] == upperclass.TYPE_ANY then
                 dumpTable[a][b] = "any"            
             end
         end        
@@ -251,6 +267,101 @@ function upperclass:getClassMemberValue(CLASS, KEY)
 end
 
 --
+-- Attempts to locate a supplied value's type table
+--
+function upperclass:getTypeTableFromValue(VALUE)
+    if type(VALUE) == 'string' then
+        return upperclass.TYPE_STRING
+        
+    elseif type(VALUE) == 'boolean' then
+        return upperclass.TYPE_BOOLEAN
+        
+    elseif type(VALUE) == 'number' then
+        return upperclass.TYPE_NUMBER
+        
+    elseif type(VALUE) == 'function' then
+        return upperclass.TYPE_FUNCTION
+        
+    elseif type(VALUE) == 'userdata' then
+        return upperclass.TYPE_USERDATA
+        
+    elseif type(VALUE) == nil then
+        return upperclass.TYPE_NIL
+        
+    elseif type(VALUE) == 'table' and rawget(VALUE, "__imp__") == nil then
+        return upperclass.TYPE_TABLE
+        
+    elseif type(VALUE) == 'table' and rawget(VALUE, "__imp__") ~= nil then
+        return upperclass.TYPE_CLASS
+    else
+        return upperclass.TYPE_ANY
+    end
+end
+
+--
+-- Attempts to locate a supplied string's type table
+--
+function upperclass:getTypeTableFromString(STRING)
+    if STRING == 'string' then
+        return upperclass.TYPE_STRING
+        
+    elseif STRING == 'table' then
+        return upperclass.TYPE_TABLE
+        
+    elseif STRING == 'function' then
+        return upperclass.TYPE_FUNCTION
+    
+    elseif STRING == 'number' then
+        return upperclass.TYPE_NUMBER
+    
+    elseif STRING == 'boolean' then
+        return upperclass.TYPE_BOOLEAN
+        
+    elseif STRING == 'userdata' then
+        return upperclass.TYPE_USERDATA
+        
+    elseif STRING == 'nil' then
+        return upperclass.TYPE_NIL
+        
+    elseif rawget(loadfile(STRING)(), "__imp__") ~= nil then
+        return upperclass.TYPE_CLASS
+        
+    end
+end
+
+--
+-- Attempts to locate a scope table from string
+--
+function upperclass:getScopeTableFromString(STRING)
+    if STRING == 'public' then
+        return upperclass.SCOPE_PUBLIC
+        
+    elseif STRING == 'private' then
+        return upperclass.SCOPE_PRIVATE
+        
+    elseif STRING == 'protected' then
+        return upperclass.SCOPE_PROTECTED
+        
+    elseif STRING == 'nobody' then
+        return upperclass.SCOPE_NOBODY
+        
+    else
+        return upperclass.SCOPE_PUBLIC
+    end
+end
+
+--
+-- Attempts to locate member type table from value
+--
+function upperclass:getMemberTypeTableFromValue(VALUE)
+    if type(VALUE) == "function" then 
+        return upperclass.MEMBER_TYPE_METHOD
+    else 
+        return upperclass.MEMBER_TYPE_PROPERTY 
+    end
+end
+
+--
 -- Upperclass Define function.
 --
 function upperclass:define(CLASS_NAME, PARENT)    
@@ -268,7 +379,7 @@ function upperclass:define(CLASS_NAME, PARENT)
         name = tostring(CLASS_NAME),
         members = {}        
     }    
-  
+    
     -- Store the class file
     if debug ~= nil then
         classdef.__imp__.file = debug.getinfo(2, "S").source:sub(2)
@@ -278,9 +389,9 @@ function upperclass:define(CLASS_NAME, PARENT)
     
     -- Create tables to hold instance values
     classdef.__inst__ = {        
-        isClassInstance = false,
-        memberValueOverrides = {},
-        permitMetamethodCalls = true
+        isClassInstance         = false,
+        memberValueOverrides    = {},
+        permitMetamethodCalls   = true,       
     }        
   
     -- Create table to hold reference to our parent class, if specified
@@ -320,20 +431,20 @@ function upperclass:compile(CLASS)
     -- If __construct was not defined, define it now
     if CLASS.__imp__.members["__construct"] == nil then        
         CLASS.__imp__.members["__construct"] = {
-            member_scope_get = UPPERCLASS_SCOPE_PRIVATE,                    
-            member_scope_set = UPPERCLASS_SCOPE_NOBODY,                    
-            member_type = UPPERCLASS_MEMBER_TYPE_FUNCTION,
-            value_type = UPPERCLASS_TYPE_FUNCTION,
+            member_scope_get = upperclass.SCOPE_PRIVATE,                    
+            member_scope_set = upperclass.SCOPE_NOBODY,                    
+            member_type = upperclass.MEMBER_TYPE_METHOD,
+            value_type = upperclass.TYPE_FUNCTION,
             value_default = function() end,            
         }
     end
     
     -- Define __constructparent() method
     CLASS.__imp__.members["__constructparent"] = {
-        member_scope_get = UPPERCLASS_SCOPE_PRIVATE,
-        member_scope_set = UPPERCLASS_SCOPE_NOBODY,
-        member_type = UPPERCLASS_MEMBER_TYPE_FUNCTION,
-        value_type = UPPERCLASS_TYPE_FUNCTION,
+        member_scope_get = upperclass.SCOPE_PRIVATE,
+        member_scope_set = upperclass.SCOPE_NOBODY,
+        member_type = upperclass.MEMBER_TYPE_METHOD,
+        value_type = upperclass.TYPE_FUNCTION,
         value_default = function(self, ...)            
             local constructArgs = {...}
             if self.__parent__.__inst__.isClassInstance == false then
@@ -361,113 +472,78 @@ function ClassDefinitionMetatable.__call(...)
     local members = rawget(imp, "members")
     
     -- Get our property definition values
-    local propertyTable = tables[3]
-    local propertyGetterValue = propertyTable.get
-    local propertySetterValue = propertyTable.set
-    local propertyTypeValue = propertyTable.type
-    local propertyDefaultValue = propertyTable[1]
+    local propertyTable         = tables[3]
+    local propertyGetterValue   = propertyTable.get
+    local propertySetterValue   = propertyTable.set
+    local propertyTypeValue     = propertyTable.type
+    local propertyDefaultValue  = propertyTable[1]
+    
+    -- Holds our last property name
+    local lastpropertyname = ClassDefinitionMetatable.last_property_name
     
     -- If property table length is 0, then set member values to defaults
     local proptablelen = 0
+    
+    -- Determine the number of property items    
     for key, value in pairs(propertyTable) do proptablelen = proptablelen +1 end
+    
+    -- Set to defaults if no definition items supplied
     if proptablelen == 0 then
-        members[ClassDefinitionMetatable.last_property_name].member_scope_get = UPPERCLASS_SCOPE_PUBLIC
-        members[ClassDefinitionMetatable.last_property_name].member_scope_set = UPPERCLASS_SCOPE_PUBLIC
-        members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_ANY
-        members[ClassDefinitionMetatable.last_property_name].value_default = nil            
-    else
-        -- Determine value type & value
+        members[lastpropertyname].member_scope_get = upperclass.SCOPE_PUBLIC
+        members[lastpropertyname].member_scope_set = upperclass.SCOPE_PUBLIC
+        members[lastpropertyname].value_type = upperclass.TYPE_ANY
+        members[lastpropertyname].value_default = nil            
+    
+    -- Determine value type & value        
+    else 
         if propertyTypeValue == 'any' then
-            members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_ANY
-            members[ClassDefinitionMetatable.last_property_name].value_default = propertyDefaultValue
+            members[lastpropertyname].value_type = upperclass.TYPE_ANY
+            members[lastpropertyname].value_default = propertyDefaultValue            
         elseif propertyTypeValue == nil and propertyDefaultValue ~= nil then
-            if type(propertyDefaultValue) == "string" then 
-                members[ClassDefinitionMetatable.last_property_name].value_type =  UPPERCLASS_TYPE_STRING 
-            elseif type(propertyDefaultValue) == "table" then 
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_TABLE                    
-            elseif type(propertyDefaultValue) == "number" then 
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_NUMBER
-            elseif type(propertyDefaultValue) == "userdata" then 
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_USERDATA
-            elseif type(propertyDefaultValue) == "boolean" then 
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_BOOLEAN
-            elseif type(propertyDefaultValue) == nil then 
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_ANY 
-            end                
-            members[ClassDefinitionMetatable.last_property_name].value_default = propertyDefaultValue
-        elseif propertyTypeValue ~= nil and propertyDefaultValue == nil then
-            if propertyTypeValue == 'string' then
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_STRING
-            elseif propertyTypeValue == 'table' then
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_TABLE
-            elseif propertyTypeValue == 'number' then
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_NUMBER
-            elseif propertyTypeValue == 'userdata' then
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_USERDATA
-            elseif propertyTypeValue == 'boolean' then
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_BOOLEAN
+            members[lastpropertyname].value_type = upperclass:getTypeTableFromValue(propertyDefaultValue)            
+            members[lastpropertyname].value_default = propertyDefaultValue            
+        elseif propertyTypeValue ~= nil and propertyDefaultValue == nil then            
+            members[lastpropertyname].value_type = upperclass:getTypeTableFromString(propertyTypeValue)         
+            members[lastpropertyname].value_default = nil
+        elseif propertyTypeValue ~= nil and propertyDefaultValue ~= nil then            
+            if type(propertyTypeValue) == 'string' and upperclass:getTypeTableFromString(propertyTypeValue) == upperclass:getTypeTableFromValue(propertyDefaultValue) then
+                members[lastpropertyname].value_type = upperclass:getTypeTableFromString(propertyTypeValue)
+                
+            elseif type(propertyTypeValue) == 'table' and upperclass:getTypeTableFromValue(propertyTypeValue) == upperclass:getTypeTableFromValue(propertyDefaultValue) then
+                members[lastpropertyname].value_type = upperclass:getTypeTableFromValue(propertyDefaultValue)            
+                
+            elseif type(propertyTypeValue) == 'string' and upperclass:getTypeTableFromString(propertyTypeValue) ~= upperclass:getTypeTableFromValue(propertyDefaultValue) then
+                upperclass:throw(upperclass.D_INVALID_PROPERTY_TYPE_ASSIGNMENT, lastpropertyname, tostring(propertyTypeValue), tostring(type(propertyDefaultValue)))              
+                
+            elseif type(propertyTypeValue) == 'table' and upperclass:getTypeTableFromValue(propertyTypeValue) ~= upperclass:getTypeTableFromValue(propertyDefaultValue) then
+                upperclass:throw(upperclass.D_INVALID_PROPERTY_TYPE_ASSIGNMENT, lastpropertyname, upperclass:getTypeTableFromValue(propertyTypeValue).string, tostring(type(propertyDefaultValue)))              
+                
             end
-            members[ClassDefinitionMetatable.last_property_name].value_default = nil
-        elseif propertyTypeValue ~= nil and propertyDefaultValue ~= nil and propertyTypeValue == type(propertyDefaultValue) then
-            if type(propertyDefaultValue) == "string" then 
-                members[ClassDefinitionMetatable.last_property_name].value_type =  UPPERCLASS_TYPE_STRING 
-            elseif type(propertyDefaultValue) == "table" then 
-               members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_TABLE                    
-            elseif type(propertyDefaultValue) == "number" then 
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_NUMBER
-            elseif type(propertyDefaultValue) == "userdata" then 
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_USERDATA
-            elseif type(propertyDefaultValue) == "boolean" then 
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_BOOLEAN
-            elseif type(propertyDefaultValue) == nil then 
-                members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_ANY 
-            end                
-            members[ClassDefinitionMetatable.last_property_name].value_default = propertyDefaultValue
+            
+            members[lastpropertyname].value_default = propertyDefaultValue
         elseif propertyTypeValue == nil and propertyDefaultValue == nil then
-            members[ClassDefinitionMetatable.last_property_name].value_type = UPPERCLASS_TYPE_ANY
-            members[ClassDefinitionMetatable.last_property_name].value_default = propertyDefaultValue
-        elseif propertyTypeValue == 'function' or type(propertyDefaultValue) == 'function' then
-            error("Attempt to define class member property of type 'function' is disallowed. Please define a class member function instead.")
+            members[lastpropertyname].value_type = upperclass.TYPE_ANY
+            members[lastpropertyname].value_default = propertyDefaultValue        
         else
-            error("Attempt to define class member property '"..ClassDefinitionMetatable.last_property_name.."' as type '"..tostring(propertyTypeValue).."' when supplied value is of type '"..tostring(type(propertyDefaultValue)).."' is disallowed")              
+            upperclass:throw(upperclass.D_INVALID_PROPERTY_TYPE_ASSIGNMENT, lastpropertyname, tostring(propertyTypeValue), tostring(type(propertyDefaultValue)))                                        
         end            
         
         -- Determine getter scope
-        if propertyGetterValue == 'public' then
-            members[ClassDefinitionMetatable.last_property_name].member_scope_get = UPPERCLASS_SCOPE_PUBLIC
-        elseif propertyGetterValue == 'private' then
-            members[ClassDefinitionMetatable.last_property_name].member_scope_get = UPPERCLASS_SCOPE_PRIVATE
-        elseif propertyGetterValue == 'protected' then
-            members[ClassDefinitionMetatable.last_property_name].member_scope_get = UPPERCLASS_SCOPE_PROTECTED
-        elseif propertyGetterValue == 'nobody' then
-            members[ClassDefinitionMetatable.last_property_name].member_scope_get = UPPERCLASS_SCOPE_NOBODY
-        else
-            members[ClassDefinitionMetatable.last_property_name].member_scope_get = UPPERCLASS_SCOPE_PUBLIC
-        end
+        members[lastpropertyname].member_scope_get = upperclass:getScopeTableFromString(propertyGetterValue)        
         
         -- Determine setter scope
-        if propertySetterValue == 'public' then
-            members[ClassDefinitionMetatable.last_property_name].member_scope_set = UPPERCLASS_SCOPE_PUBLIC
-        elseif propertySetterValue == 'private' then
-            members[ClassDefinitionMetatable.last_property_name].member_scope_set = UPPERCLASS_SCOPE_PRIVATE
-        elseif propertySetterValue == 'protected' then
-            members[ClassDefinitionMetatable.last_property_name].member_scope_set = UPPERCLASS_SCOPE_PROTECTED
-        elseif propertySetterValue == 'nobody' then
-            members[ClassDefinitionMetatable.last_property_name].member_scope_set = UPPERCLASS_SCOPE_NOBODY
-        else
-            members[ClassDefinitionMetatable.last_property_name].member_scope_set = UPPERCLASS_SCOPE_PUBLIC
-        end
+        members[lastpropertyname].member_scope_set = upperclass:getScopeTableFromString(propertySetterValue)        
     end
 end
 
 --
 -- ClassDefinitionMetatable __index method
 --
-function ClassDefinitionMetatable.__index(TABLE, KEY)
+function ClassDefinitionMetatable:__index(KEY)
     -- Check what kind of index we are retreiving. If requesting table is 'property'
     -- we must create a skeleton member entry with the requested key for later use 
     -- in the __call metamethod.
-    if TABLE == property then
+    if self == property then
         -- Get our implimentation table
         local imp = rawget(ClassDefinitionMetatable.classDefinitionTable, "__imp__")
         
@@ -475,17 +551,17 @@ function ClassDefinitionMetatable.__index(TABLE, KEY)
         local members = rawget(imp, "members")
          
         -- Ensure we are not redefining an existing member
-        if members[KEY] ~= nil then
-            error("Attempt to redefine existing member '"..KEY.."' in class '"..imp.name.."' is disallowed")
+        if members[KEY] ~= nil then            
+            upperclass:throw(upperclass.D_INVALID_EXISTING_MEMBER_ASSIGNMENT, tostring(KEY), tostring(imp.name))            
         end
          
         -- Setup our member property table with defaults that will be later thrown away
         -- in the __call metamethod
         members[KEY] = {
-            member_scope_get    = UPPERCLASS_SCOPE_NOBODY,                
-            member_scope_set    = UPPERCLASS_SCOPE_NOBODY, 
-            member_type         = UPPERCLASS_MEMBER_TYPE_PROPERTY,
-            value_type          = UPPERCLASS_TYPE_NIL,
+            member_scope_get    = upperclass.SCOPE_NOBODY,                
+            member_scope_set    = upperclass.SCOPE_NOBODY, 
+            member_type         = upperclass.MEMBER_TYPE_PROPERTY,
+            value_type          = upperclass.TYPE_NIL,
             value_default       = nil,                
         }    
             
@@ -494,7 +570,7 @@ function ClassDefinitionMetatable.__index(TABLE, KEY)
            
         return property
     else
-        return rawget(TABLE, KEY)
+        return rawget(self, KEY)
     end
 end
 
@@ -515,66 +591,43 @@ function ClassDefinitionMetatable.__newindex(TABLE, KEY, VALUE)
                 
     -- Create our members based on type and scope
     members[KEY] = {
-        member_scope_get = UPPERCLASS_SCOPE_NOBODY,                
-        member_scope_set = UPPERCLASS_SCOPE_NOBODY, 
-        member_type = (function()
-            if type(VALUE) == "function" then 
-                return UPPERCLASS_MEMBER_TYPE_FUNCTION
-            else 
-                return UPPERCLASS_MEMBER_TYPE_PROPERTY 
-            end
-        end)(),
-        value_type = (function() 
-            if type(VALUE) == "string" then 
-                return UPPERCLASS_TYPE_STRING 
-            elseif type(VALUE) == "table" then 
-                return UPPERCLASS_TYPE_TABLE
-            elseif type(VALUE) == "function" then 
-                return UPPERCLASS_TYPE_FUNCTION
-            elseif type(VALUE) == "number" then 
-                return UPPERCLASS_TYPE_NUMBER
-            elseif type(VALUE) == "userdata" then 
-                return UPPERCLASS_TYPE_USERDATA
-            elseif type(VALUE) == "boolean" then 
-                return UPPERCLASS_TYPE_BOOLEAN 
-            elseif VALUE == nil then 
-                return UPPERCLASS_TYPE_ANY 
-            end
-        end)(),
-        value_default = VALUE                      
-    }    
+        member_scope_get    = upperclass.SCOPE_NOBODY,                
+        member_scope_set    = upperclass.SCOPE_NOBODY, 
+        member_type         = upperclass:getMemberTypeTableFromValue(VALUE),
+        value_type          = upperclass:getTypeTableFromValue(VALUE),
+        value_default       = VALUE                      
+    }
+    
+    -- Determine member scopes
     if TABLE == rawget(_G, "public") then
-        members[KEY].member_scope_get = UPPERCLASS_SCOPE_PUBLIC
-        members[KEY].member_scope_set = UPPERCLASS_SCOPE_PUBLIC                 
+        members[KEY].member_scope_get = upperclass.SCOPE_PUBLIC
+        members[KEY].member_scope_set = upperclass.SCOPE_PUBLIC                 
     elseif TABLE == rawget(_G, "private") then
-        members[KEY].member_scope_get = UPPERCLASS_SCOPE_PRIVATE
-        members[KEY].member_scope_set = UPPERCLASS_SCOPE_PRIVATE   
+        members[KEY].member_scope_get = upperclass.SCOPE_PRIVATE
+        members[KEY].member_scope_set = upperclass.SCOPE_PRIVATE   
     elseif TABLE == rawget(_G, "protected") then
-        members[KEY].member_scope_get = UPPERCLASS_SCOPE_PROTECTED
-        members[KEY].member_scope_set = UPPERCLASS_SCOPE_PROTECTED           
+        members[KEY].member_scope_get = upperclass.SCOPE_PROTECTED
+        members[KEY].member_scope_set = upperclass.SCOPE_PROTECTED           
     end
         
     -- If we are defining a function, set setter scope to nobody as you cannot redefine functions at runtime
     if type(VALUE) == "function" then
-        members[KEY].member_scope_set = UPPERCLASS_SCOPE_NOBODY
+        members[KEY].member_scope_set = upperclass.SCOPE_NOBODY
     end
 end
 
 --
 -- ClassRuntimeMetatable __call method
 --
-function ClassRuntimeMetatable.__call(...)
+function ClassRuntimeMetatable:__call(...)
     -- Pack args
     local arguments = {...}
-        
-    -- Get table argument, a.k.a 'self'
-    local self = arguments[1]
             
     -- Define instance table to return
     local instance = {}
             
     -- Setup reference to class implimentation
-    instance.__imp__ = self.__imp__
+    instance.__imp__ = rawget(self, '__imp__')
             
     -- Setup table to hold instance implimentation
     instance.__inst__ = {
@@ -584,17 +637,18 @@ function ClassRuntimeMetatable.__call(...)
     }
         
     -- Set parent reference
-    instance.__parent__ = self.__parent__
-        
+    instance.__parent__ = rawget(self, '__parent__')
+    
+    -- Activate the instance by setting its metatable
     setmetatable(instance, ClassRuntimeMetatable)
             
     -- Call class constructor
-    local __construct = self.__imp__.members["__construct"].value_default
-    __construct(instance, unpack(arguments, 2, table.maxn(arguments)))
+    local __construct = rawget(self, '__imp__').members["__construct"].value_default
+    __construct(instance, unpack(arguments, 1, table.maxn(arguments)))
      
-    -- Construct parent
-    if instance.__parent__ ~= nil and instance.__parent__.__inst__.isClassInstance == false then                         
-        instance.__parent__ = self.__parent__()
+    -- Construct parent if it was not constructed by class constructor
+    if rawget(instance, '__parent__') ~= nil and rawget(instance, '__parent__').__inst__.isClassInstance == false then                         
+        instance.__parent__ = rawget(self, '__parent__')()
     end
         
     return instance   
@@ -603,38 +657,34 @@ end
 --
 -- ClassRuntimeMetatable __index method
 --
-function ClassRuntimeMetatable.__index(TABLE, KEY)
+function ClassRuntimeMetatable:__index(KEY)
     -- Ensure we return some important keys.
     if KEY == "__imp__" or KEY == "__inst__" or KEY == "__parent__" then
-        return rawget(TABLE, KEY)
+        return rawget(self, KEY)
     end
-    
-    local classimp = rawget(TABLE, '__imp__')
-    local classinst = rawget(TABLE, '__inst__')
         
     -- Attempt to locate a user defined __index member and call it
-    if KEY ~= '__index' and upperclass:getClassMember(TABLE, '__index') ~= nil and classinst.permitMetamethodCalls == true then        
+    if KEY ~= '__index' and rawget(self, '__inst__').permitMetamethodCalls == true and upperclass:getClassMember(self, '__index') ~= nil then        
         -- We must set permitMetamethodCalls to false to stop recursive behavior
-        classinst.permitMetamethodCalls = false            
+        rawget(self, '__inst__').permitMetamethodCalls = false            
             
         -- Call the __index user defined member
-        local indexMetamethodMemberRetVal = upperclass:getClassMember(TABLE, '__index').value_default(TABLE, KEY)            
+        local indexMetamethodMemberRetVal = upperclass:getClassMember(self, '__index').value_default(self, KEY)            
             
         -- Reenable permitMetamethodCalls
-        classinst.permitMetamethodCalls = true            
+        rawget(self, '__inst__').permitMetamethodCalls = true            
         
-        if indexMetamethodMemberRetVal ~= UPPERCLASS_DEFAULT_BEHAVIOR then
+        if indexMetamethodMemberRetVal ~= upperclass.DEFAULT_BEHAVIOR then
             return indexMetamethodMemberRetVal
         end        
     end
     
     -- get our target member
-    local targetMember = upperclass:getClassMember(TABLE, KEY)
-    
-    
+    local targetMember = upperclass:getClassMember(self, KEY)
+        
     -- Halt if our target member is nil
     if targetMember == nil then
-        error("Attempt to obtain non-existant class member '"..tostring(KEY).."' in class '"..tostring(classimp.name).."' is disallowed")
+        upperclass:throw(upperclass.R_INVALID_MEMBER_LOOKUP, tostring(KEY), tostring(rawget(self, '__imp__').name))        
     end
     
     --[[
@@ -642,70 +692,65 @@ function ClassRuntimeMetatable.__index(TABLE, KEY)
     --]]
         
     -- Return members based on scope
-    if targetMember.member_scope_get == UPPERCLASS_SCOPE_PUBLIC or debug == nil then        
-        return upperclass:getClassMemberValue(TABLE, KEY)
-    elseif targetMember.member_scope_get == UPPERCLASS_SCOPE_PRIVATE then
+    if debug == nil or targetMember.member_scope_get == upperclass.SCOPE_PUBLIC then        
+        return upperclass:getClassMemberValue(self, KEY)
+    elseif targetMember.member_scope_get == upperclass.SCOPE_PRIVATE then
         local caller = debug.getinfo(2, 'f').func            
-        local members = upperclass:getClassMembers(TABLE, false)
+        local members = upperclass:getClassMembers(self, false)
         for a=1, #members do                
-            if caller == members[a].value_default then                
-                --return TABLE.__inst__.memberValueOverrides[KEY] or targetMember.value_default
-                return upperclass:getClassMemberValue(TABLE, KEY)
+            if caller == members[a].value_default then                                
+                return upperclass:getClassMemberValue(self, KEY)
             end
-        end        
-        error("Attempt to retrieve private member '"..tostring(KEY).."' from outside of class '"..TABLE.__imp__.name.."' is disallowed")
-    elseif targetMember.member_scope_get == UPPERCLASS_SCOPE_PROTECTED then
+        end
+        upperclass:throw(upperclass.R_INVALID_SCOPE_ACCESS, 'private', tostring(KEY), tostring(rawget(self, '__imp__').name))        
+    elseif targetMember.member_scope_get == upperclass.SCOPE_PROTECTED then
         local caller = debug.getinfo(2, 'f').func            
-        local members = upperclass:getClassMembers(TABLE, true)        
+        local members = upperclass:getClassMembers(self, true)        
         for a=1, #members do                        
-            if caller == members[a].value_default then                  
-                --return TABLE.__inst__.memberValueOverrides[KEY] or targetMember.value_default
-                return upperclass:getClassMemberValue(TABLE, KEY)
+            if caller == members[a].value_default then                                  
+                return upperclass:getClassMemberValue(self, KEY)
             end
         end          
-        error("Attempt to retrieve protected member '"..tostring(KEY).."' from outside of class '"..TABLE.__imp__.name.."' is disallowed")
+        upperclass:throw(upperclass.R_INVALID_SCOPE_ACCESS, 'protected', tostring(KEY), tostring(rawget(self, '__imp__').name))        
     end
 end
 
 --
 -- ClassRuntimeMetatable __newindex method
 --
-function ClassRuntimeMetatable.__newindex(TABLE, KEY, VALUE)
-    -- Ensure we return some important keys.
+function ClassRuntimeMetatable:__newindex(KEY, VALUE)    
+    -- Ensure we do not attempt to overwrite important keys
     if KEY == "__imp__" or KEY == "__inst__" or KEY == "__parent__" then
-       error("Attempt to set internal class member '"..tostring(KEY).."' is disallowed")
+        upperclass:throw(upperclass.R_INVALID_MEMBER_ASSIGNMENT, 'internal', tostring(KEY), tostring(rawget(self, '__imp__').name))       
     end
     
-    local classimp = rawget(TABLE, '__imp__')
-    local classinst = rawget(TABLE, '__inst__')
-    
     -- Attempt to locate a user defined __newindex member and call it
-    if KEY ~= '__newindex' and upperclass:getClassMember(TABLE, '__newindex') ~= nil and classinst.permitMetamethodCalls == true then        
+    if KEY ~= '__newindex' and rawget(self, '__inst__').permitMetamethodCalls == true and upperclass:getClassMember(self, '__newindex') ~= nil then        
         -- We must set permitMetamethodCalls to false to stop recursive behavior
-        classinst.permitMetamethodCalls = false            
+        rawget(self, '__inst__').permitMetamethodCalls = false            
             
         -- Call the __index user defined member
-        local newindexMetamethodMemberRetVal = upperclass:getClassMember(TABLE, '__newindex').value_default(TABLE, KEY, VALUE)            
+        local newindexMetamethodMemberRetVal = upperclass:getClassMember(self, '__newindex').value_default(self, KEY, VALUE)            
             
         -- Reenable permitMetamethodCalls
-        classinst.permitMetamethodCalls = true            
+        rawget(self, '__inst__').permitMetamethodCalls = true            
             
-        if newindexMetamethodMemberRetVal ~= UPPERCLASS_DEFAULT_BEHAVIOR then
+        if newindexMetamethodMemberRetVal ~= upperclass.DEFAULT_BEHAVIOR then
             return newindexMetamethodMemberRetVal
         end        
     end
     
     -- Attempt to locate a target member
-    local targetMember = upperclass:getClassMember(TABLE, KEY)
+    local targetMember = upperclass:getClassMember(self, KEY)
     
     -- Halt if our target member is nil
     if targetMember == nil then
-        error("Attempt to obtain non-existant class member '"..tostring(KEY).."' in class '"..tostring(TABLE.__imp__.name).."' is disallowed")
+        upperclass:throw(upperclass.R_INVALID_MEMBER_LOOKUP, tostring(KEY), tostring(rawget(self, '__imp__').name))        
     end
     
     -- Halt if our target member is a method
-    if targetMember.member_type == UPPSERCLASS_MEMBER_TYPE_FUNCTION then
-        error("Attempt to override member method '"..tostring(KEY).."' is disallowed")
+    if targetMember.member_type == upperclass.MEMBER_TYPE_METHOD then
+        upperclass:throw(upperclass.R_INVALID_MEMBER_ASSIGNMENT, 'method', tostring(KEY), tostring(rawget(self, '__imp__').name))        
     end
     
     --[[
@@ -719,44 +764,51 @@ function ClassRuntimeMetatable.__newindex(TABLE, KEY, VALUE)
     local editPermitted = false
     
     -- Conduct scope check
-    if debug == nil or targetMember.member_scope_set == UPPERCLASS_SCOPE_PUBLIC then
+    if debug == nil or targetMember.member_scope_set == upperclass.SCOPE_PUBLIC then
         scopePermitted = true        
-    elseif targetMember.member_scope_set == UPPERCLASS_SCOPE_PRIVATE then                 
+    elseif targetMember.member_scope_set == upperclass.SCOPE_PRIVATE then                 
         local caller = debug.getinfo(2, 'f').func            
-        local members = upperclass:getClassMembers(TABLE, false)
+        local members = upperclass:getClassMembers(self, false)
         for a=1, #members do                
             if caller == members[a].value_default then                                        
                 scopePermitted = true
             end
         end
-        if scopePermitted ~= true then
-            error("Attempt to set private member '"..tostring(KEY).."' from outside class '"..TABLE.__imp__.name.."' is disallowed")
+        if scopePermitted == false then
+            upperclass:throw(upperclass.R_INVALID_MEMBER_SCOPED_ASSIGNMENT, 'private', tostring(KEY), tostring(rawget(self, '__imp__').name))            
         end
-    elseif targetMember.member_scope_set == UPPERCLASS_SCOPE_PROTECTED then
+    elseif targetMember.member_scope_set == upperclass.SCOPE_PROTECTED then
         local caller = debug.getinfo(2, 'f').func            
-        local members = upperclass:getClassMembers(TABLE, true)
+        local members = upperclass:getClassMembers(self, true)
         for a=1, #members do                
             if caller == members[a].value_default then                    
                 scopePermitted = true
             end
         end         
-        if scopePermitted ~= true then
-            error("Attempt to set protected member '"..tostring(KEY).."' from outside of class '"..TABLE.__imp__.name.."' is disallowed")
+        if scopePermitted == false then
+            upperclass:throw(upperclass.R_INVALID_MEMBER_SCOPED_ASSIGNMENT, 'protected', tostring(KEY), tostring(rawget(self, '__imp__').name))            
         end
     end
     
     -- Conduct edit allowed check
-    if targetMember.value_type == UPPERCLASS_TYPE_ANY then
+    if targetMember.value_type == upperclass.TYPE_ANY then
         editPermitted = true
     elseif targetMember.value_type.string == type(VALUE) then
-        editPermitted = true
-    else        
-        error("Attempt to set member '"..tostring(KEY).."' in class '"..TABLE.__imp__.name.."' of type '"..targetMember.value_type.string.."' with value type '"..tostring(type(VALUE)).."' is disallowed")
+        editPermitted = true    
+    else
+        upperclass:throw(
+            upperclass.R_INVALID_MEMBER_TYPE_ASSIGNMENT,  
+            targetMember.member_scope_set.string, 
+            tostring(KEY), 
+            targetMember.value_type.string, 
+            tostring(type(VALUE)), 
+            tostring(rawget(self, '__imp__').name)
+        )        
     end
     
     -- Conduct edit
     if editPermitted == true then
-        classinst.memberValueOverrides[KEY] = {value=VALUE}
+        rawget(self, '__inst__').memberValueOverrides[KEY] = {value=VALUE}
     end
 end
 
@@ -764,43 +816,178 @@ end
 --
 -- ClassRuntimeMetatable __tostring method
 --
-function ClassRuntimeMetatable.__tostring(TABLE)
-    local classimp = rawget(TABLE, '__imp__')
-    local classinst = rawget(TABLE, '__inst__')
-    
-    if upperclass:getClassMember(TABLE, '__tostring') ~= nil then
-        local tostringMetamethodRetVal = upperclass:getClassMember(TABLE, '__tostring').value_default(TABLE)        
-        if tostringMetamethodRetVal == UPPERCLASS_DEFAULT_BEHAVIOR then
-            return "class "..classimp.name
+function ClassRuntimeMetatable:__tostring()
+    local member = upperclass:getClassMember(self, '__tostring')
+    if member ~= nil then
+        local tostringMetamethodRetVal = member.value_default(self)        
+        if tostringMetamethodRetVal == upperclass.DEFAULT_BEHAVIOR then
+            return "class "..rawget(self, '__imp__').name.." ("..tostring(self.__inst__)..")"
         else
             return tostringMetamethodRetVal
         end
     else
-        return "class "..classimp.name
+        return "class "..rawget(self, '__imp__').name.." ("..tostring(self.__inst__)..")"
     end
 end
 
 --
 -- ClassRuntimeMetatable __add method
 --
-function ClassRuntimeMetatable.__add(TABLE, RIGHT)
-    local classimp = rawget(TABLE, '__imp__')
-    local classinst = rawget(TABLE, '__inst__')
-    
-    if upperclass:getClassMember(TABLE, '__add') ~= nil then
-        return upperclass:getClassMember(TABLE, '__add').value_default(TABLE, RIGHT)
+function ClassRuntimeMetatable:__add(RIGHT)
+    local member = upperclass:getClassMember(self, '__add')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else        
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__add', tostring(rawget(self, '__imp__').name))
     end
 end
 
 --
 -- ClassRuntimeMetatable __sub method
 --
-function ClassRuntimeMetatable.__sub(TABLE, RIGHT)
-    local classimp = rawget(TABLE, '__imp__')
-    local classinst = rawget(TABLE, '__inst__')
-    
-    if upperclass:getClassMember(TABLE, '__sub') ~= nil then
-        return upperclass:getClassMember(TABLE, '__sub').value_default(TABLE, RIGHT)
+function ClassRuntimeMetatable:__sub(RIGHT)
+    local member = upperclass:getClassMember(self, '__sub')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__sub', tostring(rawget(self, '__imp__').name))
+    end
+end
+
+--
+-- ClassRuntimeMetatable __unm method
+--
+function ClassRuntimeMetatable:__unm()
+    local member = upperclass:getClassMember(self, '__unm')
+    if member ~= nil then
+        return member.value_default(self)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__unm', tostring(rawget(self, '__imp__').name))
+    end
+end
+
+--
+-- ClassRuntimeMetatable __concat method
+--
+function ClassRuntimeMetatable:__concat(RIGHT)
+    local member = upperclass:getClassMember(self, '__concat')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__concat', tostring(rawget(self, '__imp__').name))
+    end
+end
+
+--
+-- ClassRuntimeMetatable __mul method
+--
+function ClassRuntimeMetatable:__mul(RIGHT)
+    local member = upperclass:getClassMember(self, '__mul')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__mul', tostring(rawget(self, '__imp__').name))
+    end
+end
+
+--
+-- ClassRuntimeMetatable __div method
+--
+function ClassRuntimeMetatable:__div(RIGHT)
+    local member = upperclass:getClassMember(self, '__div')
+    if member ~= nil then
+        return membervalue_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__div', tostring(rawget(self, '__imp__').name))
+    end
+end
+
+--
+-- ClassRuntimeMetatable __mod method
+--
+function ClassRuntimeMetatable:__mod(RIGHT)
+    local member = upperclass:getClassMember(self, '__mod')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__mod', tostring(rawget(self, '__imp__').name))
+    end
+end
+
+--
+-- ClassRuntimeMetatable __pow method
+--
+function ClassRuntimeMetatable:__pow(RIGHT)
+    local member = upperclass:getClassMember(self, '__pow')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__pow', tostring(rawget(self, '__imp__').name))
+    end
+end
+
+--
+-- ClassRuntimeMetatable __eq method
+--
+function ClassRuntimeMetatable:__eq(RIGHT)
+    local member = upperclass:getClassMember(self, '__eq')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        local comp = false
+        local mt = getmetatable(self)
+        setmetatable(self, nil)        
+        if self == RIGHT then comp = true end
+        setmetatable(self, mt)
+        return comp
+    end
+end
+
+--
+-- ClassRuntimeMetatable __lt method
+--
+function ClassRuntimeMetatable:__lt(RIGHT)
+    local member = upperclass:getClassMember(self, '__lt')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__lt', tostring(rawget(self, '__imp__').name))
+    end
+end
+
+--
+-- ClassRuntimeMetatable __le method
+--
+function ClassRuntimeMetatable:__le(RIGHT)
+    local member = upperclass:getClassMember(self, '__le')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__le', tostring(rawget(self, '__imp__').name))
+    end
+end
+
+--
+-- ClassRuntimeMetatable __gc method
+--
+--[[function ClassRuntimeMetatable:__gc()
+    local member = upperclass:getClassMember(self, '__gc')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__gc', tostring(rawget(self, '__imp__').name))
+    end
+end]]
+
+--
+-- ClassRuntimeMetatable __len method
+--
+function ClassRuntimeMetatable:__len()
+    local member = upperclass:getClassMember(self, '__len')
+    if member ~= nil then
+        return member.value_default(self, RIGHT)
+    else
+        upperclass:throw(upperclass.R_INVALID_METAMETHOD_LOOKUP, '__len', tostring(rawget(self, '__imp__').name))
     end
 end
 

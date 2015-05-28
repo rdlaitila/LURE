@@ -1,7 +1,9 @@
+print(_VERSION)
 local lure = require('lure.init')
 local window = nil
 
 function love.load()
+    
     window = lure.bom.Window()
     window.debugMessages = true
     window:resizeTo(love.graphics.getWidth(), 200)

@@ -45,7 +45,7 @@ function private:__index(KEY)
         return self.nodeName
     end
     
-    return UPPERCLASS_DEFAULT_BEHAVIOR
+    return lure.lib.upperclass.DEFAULT_BEHAVIOR
 end
 
 --

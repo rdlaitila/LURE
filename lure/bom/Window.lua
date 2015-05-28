@@ -128,7 +128,10 @@ property : resourceLoader {
 --
 -- Class Constructor
 --
-function private:__construct()    
+function private:__construct()   
+    --Initialize document
+    self.document = lure.dom.Document()
+    
     -- Create a new DOMParser
     self.DOMParser = lure.dom.DOMParser()
     
@@ -217,7 +220,7 @@ function public:open(URI)
         self.document:addEventListener('mouseleave',    {self, 'onDomEvent'}, false)        
         
         -- Begin parsing document
-        self.DOMParser:parseFromString(RESPONSE.content)    
+        self.DOMParser:parseFromString(RESPONSE.content)
     end)    
 end
 
