@@ -64,6 +64,7 @@ function public:parseFromString(XML_STRING)
     
     --self.srcText = string.gsub(pSrcText, "[\r\n]", "")        
     
+    -- Begin walking document text
     while charindex <= self.srcText:len() do        
         if self:char(charindex) == "<" then                
             if self.textNodeCharBuffer:len() > 0 then                    
@@ -92,7 +93,15 @@ function public:parseFromString(XML_STRING)
             charindex = charindex +1
         end            
     end                
-        
+    
+    -- Fire HTML5 DOMContentLoaded Event
+    self.document:dispatchEvent(
+        lure.dom.Event('DOMContentLoaded', {
+            target = self.document,
+            bubbles = true
+        })
+    )
+    
     return self.document
 end
 

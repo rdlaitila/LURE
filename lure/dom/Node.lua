@@ -437,6 +437,7 @@ function public:dispatchEvent(EVENT)
     -- Build the upward callstack to top level node, generally the Document Object
     local callstack = lure.dom.NodeList()
     local currentNode = self
+    callstack:add(currentNode)    
     while true do
         -- Check to ensure we do not have a recursive parentNode reference
         if currentNode.parentNode == currentNode then

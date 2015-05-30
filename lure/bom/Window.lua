@@ -211,6 +211,7 @@ function public:open(URI)
         self.document:addEventListener('contextmenu',   {self, 'onDomEvent'}, false)
         self.document:addEventListener('dblclick',      {self, 'onDomEvent'}, false)
         self.document:addEventListener('DOMNodeInsertedIntoDocument', {self, 'onDomEvent'}, false)
+        self.document:addEventListener('DOMContentLoaded', {self, 'onDomEvent'}, false)
         self.document:addEventListener('mousedown',     {self, 'onDomEvent'}, false)
         self.document:addEventListener('mouseup',       {self, 'onDomEvent'}, false)
         self.document:addEventListener('mousemove',     {self, 'onDomEvent'}, false)                
@@ -226,14 +227,12 @@ end
 
 function public:onDomEvent(EVENT)
     if self.debugMessages then
-        print(EVENT.type, EVENT.eventPhase, EVENT.currentTarget.nodeName, EVENT.target.nodeName)
-    end
-    
-    if EVENT.type == 'DOMNodeInsertedIntoDocument' then
-        if EVENT.target.nodeType == 1 then
-            
-            print(EVENT.target.tagName)
-        end
+        print(
+            "T:"..tostring(EVENT.type), 
+            "P:"..tostring(EVENT.eventPhase), 
+            "CT:"..tostring(EVENT.currentTarget.nodeName), 
+            "TG:"..tostring(EVENT.target.nodeName)
+        )
     end
 end
 
