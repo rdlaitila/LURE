@@ -55,5 +55,10 @@ lure.cssom.CSSStyleSheet    = (BASE_PATH..'cssom.CSSStyleSheet')
 lure.cssom.CSSParser        = (BASE_PATH..'cssom.CSSParser')
 lure.cssom.Stylesheet       = (BASE_PATH..'cssom.Stylesheet')
 
+-- Begin ROM DynamicRequire's
+lure.rom              = lure.lib.namespace()
+lure.rom.RenderBox    = (BASE_PATH..'rom.RenderBox')
+lure.rom.RenderObject = (BASE_PATH..'rom.RenderObject')
+
 -- Return lure to the masses
 return lure

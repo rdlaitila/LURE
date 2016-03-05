@@ -1,89 +1,85 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define class
 --
-local Characterdata = lure.lib.upperclass:define("DOMCDATA", lure.dom.Node)
+local class = lure.lib.upperclass:define("CDATA", lure.dom.Node)
 
 --
 -- Sets or returns the text of this node
 --
-property : data {
-    nil;
-    get='public';
-    set='public';
+class.public : data {
+    default="";
     type='string';
 }
 
 -- 
 -- Class constructor
 --
-function private:__construct(DATA)
-    self:__constructparent(4)
+function class.public:init(DATA)
+    lure.lib.upperclass:expect(DATA):type('string'):throw()
+    
+    lure.dom.Node.init(self, 4)
+    
     self.nodeName = "#cdata-section"
+    
     self.data = DATA        
 end
 
 --
 -- __index metamethod
 --
-function private:__index(KEY)
+function class.private:__index(KEY)
     if KEY == 'length' then
         return self.data:len()
     elseif KEY == 'nodeValue' then
         return self.data
     end
-    
-    return lure.lib.upperclass.DEFAULT_BEHAVIOR
 end
 
 --
 -- Appends data to the node
 --
-function public:appendData(DATA)
+function class.public:appendData(DATA)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Deletes data from the node
 --
-function public:deleteData(DATA)
+function class.public:deleteData(DATA)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Inserts data into the node
 --
-function public:insertData(DATA)
+function class.public:insertData(DATA)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Replaces data in the node
 --
-function public:replaceData()
+function class.public:replaceData()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Splits the CDATA node into two nodes
 --
-function public:splitText()
+function class.public:splitText()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Extracts data from the node
 --
-function public:substringData()
+function class.public:substringData()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Compile class
 --
-return lure.lib.upperclass:compile(Characterdata)
+return lure.lib.upperclass:compile(class)

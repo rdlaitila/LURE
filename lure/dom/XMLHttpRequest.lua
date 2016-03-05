@@ -1,195 +1,165 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define Class
 --
-local XMLHttpRequest = lure.lib.upperclass:define("XMLHttpRequest")
+local class = lure.lib.upperclass:define("XMLHttpRequest")
 
 --
 -- Returns a list of active xmlHttpRequst objects
 --
-property : activeRequests {
-    {};
-    get='public';
-    set='private';
+class.public : activeRequests {
+    default={};
+    setter='private';
     type='table';
 }
 
 --
 -- Returns the socket.http module
 --
-property : sockethttp {
-    require('socket.http');
-    get='public';
-    set='private';
+class.public : sockethttp {
+    default=require('socket.http');
+    setter='private';
     type='any';
 }
 
 --
 -- Returns the socket.mime module
 --
-property : mime {
-    require('mime');
-    get='public';
-    set='private';
+class.public : mime {
+    default=require('mime');
+    setter='private';
     type='any';
 }
 
 --
 -- Returns the socket.url module
 --
-property : socketurl {
-    require('socket.url');
-    get='public';
-    set='private';
+class.public : socketurl {
+    default=require('socket.url');
+    setter='private';
     type='any';
 }
 
 --
 -- Returns http params
 --
-property : httpParams {
-    nil;
-    get='private';
-    set='private';
+class.public : httpParams {
+    setter='private';
     type='table';
 }
 
 --
 -- Returns ltn12
 --
-property : ltn12 {
-    require('ltn12');
-    get='public';
-    set='private';
+class.public : ltn12 {
+    default=require('ltn12');
+    setter='private';
     type='any';
 }
 
 --
 -- Returns this ID
 --
-property : id {
-    nil;
-    get='public';
-    set='private';
+class.public : id {
+    setter='private';
     type='string';
 }
 
 --
 -- Returns the XmlHTTPRequest Thread Object
 --
-property : requestThread {
-    nil;
-    get='public';
-    set='private';
+class.public : requestThread {
+    setter='private';
     type='any';
 }
 
 --
 -- Returns the XMLHTTPRequest Thread ID
 --
-property : requestThreadID {
-    nil;
-    get='public';
-    set='private';
+class.public : requestThreadID {
+    setter='private';
     type='any';
 }
 
 --
 -- Gets or Sets the onReadyStateChange callback
 --
-property : onreadystatechange {
-    function() end;
-    get='public';
-    set='public';
-    type='any';
+class.public : onreadystatechange {
+    default=function() end;
+    type='function';
+    nullable=true;
 }
 
 --
 -- Returns the readystate
 --
-property : readystate {
-    0;
-    get='public';
-    set='private';
+class.public : readystate {
+    default=0;
+    setter='private';
     type='number';
 }
 
 --
 -- Returns the response text
 --
-property : responseText {
-    nil;
-    get='public';
-    set='private';
+class.public : responseText {
+    setter='private';
     type='string';
 }
 
 --
 -- Returns the response xml
 --
-property : responseXML {
-    nil;
-    get='public';
-    set='private';
-    type='any';
+class.public : responseXML {
+    setter='private';
+    type='string';
 }
 
 --
 -- Returns the status
 --
-property : status {
-    nil;
-    get='public';
-    set='private';
+class.public : status {
+    setter='private';
     type='any';
 }
 
 --
 -- Returns the status text
 --
-property : statusText {
-    nil;
-    get='public';
-    set='private';
-    type='any';
+class.public : statusText {
+    setter='private';
+    type='string';
 }
 
 --
 -- Returns if request is async
 --
-property : async {
-    false;
-    get='public';
-    set='private';
+class.public : async {
+    default=false;
+    setter='private';
     type='boolean';
 }
 
 --
 -- Returns the timeout
 --
-property : timeout {
-    10;
-    get='public';
-    set='public';
+class.public : timeout {
+    default=10;
     type='number';
 }
 
 --
 -- Cancels the current request
 --
-function public:abort()
+function class.public:abort()
     error("Function Not Implimented")
 end
 
 --
 -- Returns header information
 --
-function public:getAllResponseHeaders()
+function class.public:getAllResponseHeaders()
     error("Function Not Implimented")
 end
 
@@ -200,7 +170,7 @@ end
 -- url: the location of the file on the server
 -- async: true (asynchronous) or false (synchronous)
 --
-function public:open(METHOD, URL, ASYNC, USERNAME, PASSWORD)
+function class.public:open(METHOD, URL, ASYNC, USERNAME, PASSWORD)
     error("Function Not IMplimented")
 end
 
@@ -208,21 +178,21 @@ end
 -- send(string) Sends the request off to the server.
 -- string: Only used for POST requests
 --
-function public:send(string)
+function class.public:send(string)
     error("Function Not Implimented")
 end
 
 --
 -- Adds a label/value pair to the header to be sent
 --
-function public:setRequestHeader()
+function class.public:setRequestHeader()
     error("Function Not Implimented")
 end
 
 --
 -- Update loop
 --
-function public:update(DT)
+function class.public:update(DT)
     for a=1, #self.activeRequests do
     end
 end
@@ -230,4 +200,4 @@ end
 --
 -- Compile Class
 --
-return lure.lib.upperclass:compile(XMLHttpRequest)
+return lure.lib.upperclass:compile(class)

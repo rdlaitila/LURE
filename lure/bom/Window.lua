@@ -3,137 +3,105 @@ local lure = require(select('1', ...):match(".-lure%.")..'init')
 --
 -- Define Class
 --
-local Window = lure.lib.upperclass:define("BOMWindow")
+local class = lure.lib.upperclass:define("lure.bom.Window")
 
 --
 -- Returns the window canvas
 --
-property : canvas {
-    nil;
-    get='public';
-    set='private';
+class.public : canvas {
+    setter='private';
     type='any';
 }
 
 --
 -- Enabled debug messages
 --
-property : debugMessages {
-    false;
-    get='public';
-    set='public';
+class.public : debugMessages {
+    default=false;
     type='boolean';
 }
 
 --
 -- Returns the Document object for the window
 --
-property : document {
-    nil;
-    get='public';
-    set='public';
-    type='any';
-}
-
---
--- The window's DOMParser
---
-property : DOMParser {
-    nil;
-    get='public';
-    set='public';
-    type='any';
+class.public : document {
+    type='lure.dom.Document';
 }
 
 --
 -- Gets the width of the content area of the browser window including, if rendered, the vertical scrollbar.
 --
-property : innerWidth {
-    100;
-    get='public';
-    set='private';
+class.public : innerWidth {
+    default=100;
+    setter='private';
     type='number';
 }
 
 --
 -- Gets the height of the content area of the browser window including, if rendered, the horizontal scrollbar.
 --
-property : innerHeight {
-    100;
-    get='public';
-    set='private';
+class.public : innerHeight {
+    default=100;
+    setter='private';
     type='number';
 }
 
 --
 -- The windows location object
 --
-property : location {
-    nil;
-    get='public';
-    set='private';
-    type='table';
+class.public : location {
+    setter='private';
+    type='lure.bom.Location';
 }
 
 --
 -- Returns the windows left x position
 --
-property : left {
-    0;
-    get='private';
-    set='private';
+class.private : left {
+    default=0;
     type='number';
 }
 
 --
 -- Returns the windows left y position
 --
-property : top {
-    0;
-    get='private';
-    set='private';
+class.private : top {
+    default=0;
     type='number';
 }
 
 --
 -- Gets the width of the outside of the browser window.
 --
-property : outerWidth {
-    100;
-    get='public';
-    set='private';
+class.public : outerWidth {
+    default=100;
+    setter='private';
     type='number';
 }
 
 --
 -- Gets the height of the outside of the browser window.
 --
-property : outerHeight {
-    100;
-    get='public';
-    set='private';
+class.public : outerHeight {
+    default=100;
+    setter='private';
     type='number';
 }
 
 --
 -- Returns the windows resource loader
 --
-property : resourceLoader {
-    nil;
-    get='public';
-    set='private';
-    type='table';
+class.public : resourceLoader {
+    setter='private';
+    type='ResourceLoader';
 }
 
 --
 -- Class Constructor
 --
-function private:__construct()   
+function class.public:init()   
     --Initialize document
     self.document = lure.dom.Document()
-    
-    -- Create a new DOMParser
-    self.DOMParser = lure.dom.DOMParser()
     
     -- Initialize Canvas
     self.canvas = love.graphics.newCanvas(self.outerWidth, self.outerHeight)
@@ -145,7 +113,7 @@ end
 --
 -- Draw loop
 --
-function public:draw()
+function class.public:draw()
     love.graphics.print(os.clock(), 0, 0)
     love.graphics.rectangle("line", self.left, self.top, self.outerWidth, self.outerHeight)
 end
@@ -153,7 +121,7 @@ end
 --
 -- Update loop
 --
-function public:update(DT)
+function class.public:update(DT)
     -- Update our resource loader for any async lodas
     self.resourceLoader:update(DT)
     
@@ -164,7 +132,10 @@ end
 --
 -- Dynamically resizes window.
 --
-function public:resizeTo(WIDTH, HEIGHT)
+function class.public:resizeTo(WIDTH, HEIGHT)
+    lure.lib.upperclass:expect(WIDTH):type('number'):gte(0):throw()
+    lure.lib.upperclass:expect(HEIGHT):type('number'):gte(0):throw()
+    
     self.outerWidth = WIDTH
     self.outerHeight = HEIGHT
 end
@@ -172,21 +143,24 @@ end
 --
 -- Love2d Mouse Pressed Callback
 --
-function public:mousepressed(X, Y, BUTTON)    
+function class.public:mousepressed(X, Y, BUTTON)    
     -- nothing yet
 end
 
 --
 -- Love2d Mouse Released Callback
 --
-function public:mousereleased(X, Y, BUTTON)
+function class.public:mousereleased(X, Y, BUTTON)
     -- nothing yet
 end
 
 --
 -- Moves the window to the specified coordinates.
 --
-function public:moveTo(LEFT, TOP)
+function class.public:moveTo(LEFT, TOP)
+    lure.lib.upperclass:expect(LEFT):type('number'):throw()
+    lure.lib.upperclass:expect(TOP):type('number'):throw()
+    
     self.left = LEFT
     self.top = TOP
 end
@@ -194,17 +168,14 @@ end
 --
 -- The open() method opens a new browser window.
 --
-function public:open(URI)
+function class.public:open(URI)
+    lure.lib.upperclass:expect(URI):type('string'):throw()
+    
+    local document = self.document
     self.resourceLoader:load(URI, function(RESPONSE)
         if self.debugMessages then
             print("CALLBACK: ", RESPONSE.result, RESPONSE.code, RESPONSE.message, RESPONSE.content)
         end
-        
-        -- Reinitialize our DOM Parser
-        self.DOMParser = lure.dom.DOMParser()
-        
-        -- Set window document to DOMParser document
-        self.document = self.DOMParser.document
         
         -- Setup DOM events
         self.document:addEventListener('click',         {self, 'onDomEvent'}, false)
@@ -221,11 +192,12 @@ function public:open(URI)
         self.document:addEventListener('mouseleave',    {self, 'onDomEvent'}, false)        
         
         -- Begin parsing document
-        self.DOMParser:parseFromString(RESPONSE.content)
+        document:write(RESPONSE.content)
+        document:close()
     end)    
 end
 
-function public:onDomEvent(EVENT)
+function class.public:onDomEvent(EVENT)
     if self.debugMessages then
         print(
             "T:"..tostring(EVENT.type), 
@@ -239,4 +211,4 @@ end
 -- 
 -- Compile Class
 --
-return lure.lib.upperclass:compile(Window)
+return lure.lib.upperclass:compile(class)

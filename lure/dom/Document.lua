@@ -1,127 +1,114 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define class
 --
-local Document = lure.lib.upperclass:define('DOMDocument', lure.dom.Node)
+local class = lure.lib.upperclass:define('lure.dom.Document', lure.dom.Node)
 
 --
 -- Specifies whether downloading of an XML file should be handled asynchronously or not
 --
-property : async {
-    false;
-    get='public';
-    set='public';
+class.public : async {
+    default=false;
+    type='boolean';
+}
+
+--
+-- Indicates if the document is closed for writing
+--
+class.private : closed {
+    default=true;
+    type='boolean';
 }
 
 --
 -- Returns the Document Type Declaration associated with the document
 --
-property : doctype {
-    nil;
-    get='public';
-    set='private';
+class.public : doctype {
+    setter='private';
     type='any';
 }
 
 --
 -- Returns the root node of the document
 --
-property : documentElement {
-    nil;
-    get='public';
-    set='protected';
+class.public : documentElement {
+    setter='protected';
     type='any';
 }
 
 --
 -- Sets or returns the location of the document
 --
-property : documentURI {
-    nil;
-    get='public';
-    set='public';
+class.public : documentURI {
     type='string';
 }
 
 --
 -- Returns the configuration used when normalizeDocument() is invoked
 --
-property : domConfig {
-    nil;
-    get='public';
-    set='private';
+class.public : domConfig {
+    setter='private';
     type='any';
+}
+
+--
+-- Document's private domParser
+--
+class.private : domParser {
+    type='DOMParser';
 }
 
 --
 -- Returns the DOMImplementation object that handles this document
 --
-property : implementation {
-    nil;
-    get='public';
-    set='private';
+class.public : implementation {
+    setter='private';
     type='any';
 }
 
 --
 -- Returns the encoding used for the document (when parsing)
 --
-property : inputEncoding {
-    nil;
-    get='public';
-    set='private';
+class.public : inputEncoding {
+    setter='private';
     type='any';
 }
 
 --
 -- Sets or returns whether error-checking is enforced or not
 --
-property : strictErrorChecking {
-    true;
-    get='public';
-    set='public';
+class.public : strictErrorChecking {
+    default=true;
+    type='boolean';
 }
 
 --
 -- Returns the XML encoding of the document
 --
-property : xmlEncoding {
-    nil;
-    get='public';
-    set='public';
+class.public : xmlEncoding {
     type='string';
 }
 
 --
 -- Sets or returns whether the document is standalone
 --
-property : xmlStandalone {
-    nil;
-    get='public';
-    set='public';
+class.public : xmlStandalone {
     type='string'
 }
 
 --
 -- Sets or returns the XML version of the document
 --
-property : xmlVersion {
-    nil;
-    get='public';
-    set='public';
+class.public : xmlVersion {
     type='string';
 }
 
 -- 
 -- Class constructor
 --
-function private:__construct()    
-    self:__constructparent(9)
+function class.public:init()    
+    lure.dom.Node.init(self, 9)
     
     -- Set the node name
     self.nodeName = "#document"
@@ -131,104 +118,160 @@ function private:__construct()
 end
 
 --
+-- appends a new child node to the end of the list of children of a node
+-- shadows Node:appendChild
+--
+function class.public:appendChild(NODE)
+    -- Call append child of base Node
+    lure.dom.Node.appendChild(self, NODE)
+    
+    -- Set documentElement
+    if NODE.nodeType == 1 and self.documentElement == nil then
+        self.documentElement = NODE
+    end
+    
+    return NODE
+end
+
+--
 -- Adopts a node from another document to this document, and returns the adopted node
 --
-function public:adoptNode(SOURCENODE)
+function class.public:adoptNode(SOURCENODE)
     error("Method Not Yet Implimented")
+end
+
+--
+-- finishes writing to a document, opened with document.open().
+--
+function class.public:close()
+    if self.closed then
+        error("Cannot close an already closed document")
+    else
+        self.closed = true
+    end
 end
 
 --
 -- Creates an attribute node with the specified name, and returns the new Attr object
 --
-function public:createAttribute(NAME)
+function class.public:createAttribute(NAME)
     return DOMAttribute(NAME)
 end
 
 --
 -- Creates an attribute node with the specified name and namespace, and returns the new Attr object
 --
-function public:createAttributeNS(URI, NAME)
+function class.public:createAttributeNS(URI, NAME)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Creates a CDATA section node
 --
-function public:createCDATASection(DATA)
+function class.public:createCDATASection(DATA)
     return DOMCDATA(DATA)
 end
 
 --
 -- Creates a comment node
 --
-function public:createComment(DATA)
+function class.public:createComment(DATA)
     return DOMComment(DATA)
 end
 
 --
 -- Creates an empty DocumentFragment object, and returns it
 --
-function public:createDocumentFragment()
+function class.public:createDocumentFragment()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Creates an element node
 --
-function public:createElement(TAGNAME)
-    return DOMElement(TAGNAME)
+function class.public:createElement(TAGNAME)
+    lure.lib.upperclass:expect(TAGNAME):type('string'):ne(''):throw()
+    
+    return lure.dom.Element(TAGNAME)
 end
 
 --
 -- Creates an element node with a specified namespace
 --
-function public:createElementNS()
+function class.public:createElementNS()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Creates an EntityReference object, and returns it
 --
-function public:createEntityReference(NAME)
+function class.public:createEntityReference(NAME)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Creates a ProcessingInstruction object, and returns it
 --
-function public:createProcessingInstruction(TARGET, DATA)
+function class.public:createProcessingInstruction(TARGET, DATA)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Creates a text node
 --
-function public:createTextNode(TEXT)
+function class.public:createTextNode(TEXT)
     return DOMText(TEXT)
 end
 
 --
 -- Imports a node from another document to this document. This method creates a new copy of the source node. If the deep parameter is set to true, it imports all children of the specified node. If set to false, it imports only the node itself. This method returns the imported node
 --
-function public:importNode(NODE, DEEP)
+function class.public:importNode(NODE, DEEP)
     error("Method Not Yet Implimented")
 end
 
 --
 -- normalizeDocument()
 --
-function public:normalizeDocument()
+function class.public:normalizeDocument()
     error("Method Not Yet Implimented")
+end
+
+--
+-- opens a document for writing.
+--
+function class.public:open()
+    if self.closed == false then
+        error("Cannot open an already opened document")
+    end
+    
+    self.closed = false
+    
+    self.childNodes = lure.dom.NodeList()
+    self.domParser = lure.dom.DOMParser(self)
 end
 
 --
 -- Renames an element or attribute node
 --
-function public:renameNode()
+function class.public:renameNode()
     error("Method Not Yet Implimented")
+end
+
+--
+-- Writes a string of text to a document stream opened by document.open()
+--
+function class.public:write(markup)
+    lure.lib.upperclass:expect(markup):type('string'):ne(''):throw()
+    
+    if self.closed then
+        self:open()
+    end
+    
+    self.domParser:parseFromString(markup)
 end
 
 --
 -- Compile Class
 --
-return lure.lib.upperclass:compile(Document)
+return lure.lib.upperclass:compile(class)

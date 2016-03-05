@@ -1,46 +1,50 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define Class
 --
-local ResourceLoader = lure.lib.upperclass:define("ResourceLoader")
+local class = lure.lib.upperclass:define("ResourceLoader")
+
+--
+-- Returns the base path to lure
+--
+class.private : basePath {
+    default=select('1', ...):match(".-lure%.");
+    type='string';
+}
 
 --
 -- Returns a table of resource loader threads
 --
-property : threads {
-    nil;
-    get='public';
-    set='private';
+class.public : threads {
+    setter='private';
     type='table';
 }
 
 --
 -- Class Constructor
 --
-function private:__construct()
+function class.public:init()
     self.threads = {}
 end
 
 --
 -- Auto loads a resource
 --
-function public:load(URI, CALLBACK)
+function class.public:load(URI, CALLBACK)
+    lure.lib.upperclass:expect(URI):type('string'):throw()
+    
     -- Create a new thread
     local threadId = lure.lib.utils:uuid()
     table.insert(self.threads, {
         id          = threadId;
-        thread      = love.thread.newThread(BASE_PATH:gsub("%.", "/")..'bom/ResourceLoaderThread.lua');
+        thread      = love.thread.newThread(self.basePath:gsub("%.", "/")..'bom/ResourceLoaderThread.lua');
         callback    = CALLBACK;        
         channel     = love.thread.getChannel(threadId);
     })
 
     -- Start the thread
-    self.threads[#self.threads].thread:start(BASE_PATH, self.threads[#self.threads].id)
+    self.threads[#self.threads].thread:start(self.basePath, self.threads[#self.threads].id)
     
     if CALLBACK == nil then
         -- Supply the thread with the URI
@@ -63,7 +67,7 @@ end
 --
 -- Update
 --
-function public:update(DT)
+function class.public:update(DT)
     for a=1, #self.threads do
         -- Get channel data, if any
         local response = self.threads[a].channel:pop()
@@ -88,4 +92,4 @@ end
 --
 -- Compile Class
 --
-return lure.lib.upperclass:compile(ResourceLoader)
+return lure.lib.upperclass:compile(class)

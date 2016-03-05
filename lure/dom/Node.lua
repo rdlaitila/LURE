@@ -3,183 +3,157 @@ local lure = require(select('1', ...):match(".-lure%.")..'init')
 --
 -- Define class
 --
-local Node = lure.lib.upperclass:define('DOMNode')
+local class = lure.lib.upperclass:define('lure.dom.Node')
 
 --
 -- A NamedNodeMap containing the attributes of this node
 --
-property : attributes { 
-    nil; 
-    get='public'; 
-    set='protected';
-    type='table'
+class.public : attributes {
+    setter='protected';
+    type='lure.dom.NamedNodeMap';
 }
 
 --
 -- Returns the absolute base URI of a node
 --
-property : baseURI {
-    "";
-    get='public';
-    set='protected'
+class.public : baseURI {
+    default="";
+    setter='protected';
+    type='string';
 }
 
 --
 -- Returns a NodeList of child nodes for a node
 --
-property : childNodes { 
-    nil; 
-    get='public'; 
-    set='protected';
-    type='table'
+class.public : childNodes {
+    setter='protected';
+    type='NodeList'
 }
 
 --
 -- Returns a list of registered eventListeners
 --
-property : eventListeners {
-    nil;
-    get='public';
-    set='protected';
+class.public : eventListeners {
+    setter='protected';
     type='table';
 }
 
 --
 -- Returns the first child of a node
 --
-property : firstChild { 
-    nil; 
-    get='public'; 
-    set='protected';
-    type='table';
+class.public : firstChild { 
+    setter='protected';
+    type='any';
 }
 
 --
 -- Returns the last child of a node
 --
-property : lastChild { 
-    nil; 
-    get='public'; 
-    set='protected';
-    type='any'
+class.public : lastChild {
+    setter='protected';
+    type='any';
 }
 
 --
 -- Returns the local part of the name of a node
 --
-property : localName {
-    "";
-    get='public';
-    set='protected'
+class.public : localName {
+    default="";
+    setter='protected';
+    type='string';
 }
 
 --
 -- Returns the namespace URI of a node
 --
-property : namespaceURI {
-    "";
-    get='public';
-    set='protected';
+class.public : namespaceURI {
+    default="";
+    setter='protected';
+    type='string';
 }
 
 --
 -- Returns the node immediately following a node
 --
-property : nextSibling {
-    nil;
-    get='public';
-    set='protected';
-    type='any'
+class.public : nextSibling {
+    setter='protected';
+    type='any';
 }
 
 --
 -- Returns the name of a node, depending on its type
 --
-property : nodeName { 
-    nil; 
-    get='public'; 
-    set='protected';
+class.public : nodeName {
+    setter='protected';
     type='string';
 }
 
 --
 -- Returns the type of a node
 --
-property : nodeType { 
-    0; 
-    get='public'; 
-    set='protected';
+class.public : nodeType { 
+    default=0; 
+    setter='protected';
+    type='number';
 }
 
 --
 -- Sets or returns the value of a node, depending on its type
 --
-property : nodeValue {
-    nil;
-    get='public';
-    set='public';
-    type='any'
+class.public : nodeValue {
+    setter='public';
+    type='any';
 }
 
 --
 -- Returns the root element (document object) for a node
 --
-property : ownerDocument {
-    nil;
-    get='public';
-    set='protected';
-    type='any'
+class.public : ownerDocument {
+    setter='protected';
+    type='lure.dom.Document';
 }
 
 --
 -- Returns the parent node of a node
 --
-property : parentNode { 
-    nil; 
-    get='public'; 
-    set='public';
+class.public : parentNode {
+    setter='public';
     type='any'
 }
 
 --
 -- Sets or returns the namespace prefix of a node
 --
-property : prefix {
-    nil;
-    get='public';
-    set='public';
-    type='any'
+class.public : prefix {
+    default="";
+    setter='public';
+    type='string';
 }
 
 --
 -- Returns the node immediately before a node
 --
-property : previousSibling {
-    nil;
-    get='public';
-    set='protected';
+class.public : previousSibling {
+    setter='protected';
     type='any';
 }
 
 --
 -- Sets or returns the textual content of a node and its descendants
 --
-property : textContent {
-    nil;
-    get='public';
-    set='public';
+class.public : textContent {
+    default="";
+    setter='public';
     type='any';
 }
 
 --
 -- Class Construct
 --
-function private:__construct(NODETYPE) 
-    if type(NODETYPE) == "number" then        
-        self.nodeType = NODETYPE
-    else
-        error("NodeType must be a number")
-    end
+function class.public:init(nodeType)
+    lure.lib.upperclass:expect(nodeType):type('number'):gt(0):throw()
+    
+    self.nodeType = nodeType
     
     -- Initialize attributes nodemap
     self.attributes = lure.dom.NamedNodeMap()
@@ -194,7 +168,9 @@ end
 --
 -- Appends a new child node to the end of the list of children of a node
 --
-function public:appendChild(NODE) 
+function class.public:appendChild(NODE)
+    lure.lib.upperclass:expect(NODE):ne(nil):throw()
+    
     -- Set the incoming node's parentNode to self
     NODE.parentNode = self
     
@@ -210,12 +186,6 @@ function public:appendChild(NODE)
     -- Set self's lastChild
     self.lastChild = self.childNodes[self.childNodes.length]
     
-    -- If this node is a document node (type 9) and the appending node is 
-    -- a element node (type 1) then set documentElement to self
-    if self.nodeType == 9 and NODE.nodeType == 1 then
-        self.documentElement = NODE
-    end
-    
     -- Fire a DOM level 3 DOMNodeInsertedIntoDocument event        
     self:dispatchEvent(
         lure.dom.Event('DOMNodeInsertedIntoDocument', {            
@@ -230,35 +200,35 @@ end
 --
 -- Clones a node
 --
-function public:cloneNode()
+function class.public:cloneNode()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Compares the placement of two nodes in the DOM hierarchy (document)
 --
-function public:compareDocumentPosition()
+function class.public:compareDocumentPosition()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Returns a DOM object which implements the specialized APIs of the specified feature and version
 --
-function public:getFeature()
+function class.public:getFeature()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Returns the object associated to a key on a this node. The object must first have been set to this node by calling setUserData with the same key
 --
-function public:getUserData()
+function class.public:getUserData()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Returns true if the specified node has any attributes, otherwise false
 --
-function public:hasAttributes()
+function class.public:hasAttributes()
     if self.attributes.length > 0 then
         return true
     else
@@ -269,7 +239,7 @@ end
 --
 -- Returns true if the specified node has any child nodes, otherwise false
 --
-function public:hasChildNodes()
+function class.public:hasChildNodes()
     if self.childNodes.length > 0 then
         return true
     else
@@ -280,49 +250,49 @@ end
 --
 -- Inserts a new child node before an existing child node
 --
-function public:insertBefore()
+function class.public:insertBefore()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Returns whether the specified namespaceURI is the default
 --
-function public:isDefaultNamespace()
+function class.public:isDefaultNamespace()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Tests whether two nodes are equal
 --
-function public:isEqualNode()
+function class.public:isEqualNode()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Tests whether the two nodes are the same node
 --
-function public:isSameNode()
+function class.public:isSameNode()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Tests whether the DOM implementation supports a specific feature and that the feature is supported by the specified node
 --
-function public:isSupported()
+function class.public:isSupported()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Returns the namespace URI associated with a given prefix
 --
-function public:lookupNamespaceURI()
+function class.public:lookupNamespaceURI()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Returns the prefix associated with a given namespace URI
 --
-function public:lookupPrefix()
+function class.public:lookupPrefix()
     error("Method Not Yet Implimented")
 end
 
@@ -331,42 +301,42 @@ end
 -- (e.g., elements, comments, processing instructions, CDATA sections, and entity references) separates Text nodes, 
 -- i.e., there are neither adjacent Text nodes nor empty Text nodes
 --
-function public:normalize()
+function class.public:normalize()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Removes a specified child node from the current node 
 --
-function public:removeChild()
+function class.public:removeChild()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Replaces a child node with a new node
 --
-function public:replaceChild()
+function class.public:replaceChild()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Associates an object to a key on a node
 --
-function public:setUserData()
+function class.public:setUserData()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Returns the element that has an ID attribute with the given value. If no such element exists, it returns null
 --
-function public:getElementById(ID)
+function class.public:getElementById(ID)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Returns a NodeList of all elements with a specified name
 --
-function public:getElementsByTagName(TAGNAME)
+function class.public:getElementsByTagName(TAGNAME)
     local nodelist = lure.dom.NodeList()
     local targetElement = self
     
@@ -389,7 +359,7 @@ end
 --
 -- Returns a NodeList of all elements with a specified name and namespace
 --
-function public:getElementsByTagNameNS()
+function class.public:getElementsByTagNameNS()
     error("Method Not Yet Implimented")
 end
 
@@ -398,7 +368,7 @@ end
 -- @param EVENT_TYPE string
 -- @param CALLBACK 
 --
-function public:addEventListener(EVENT_TYPE, CALLBACK, USE_CAPTURE)
+function class.public:addEventListener(EVENT_TYPE, CALLBACK, USE_CAPTURE)
     -- Generate our EventListener object
     local listener = lure.dom.EventListener(EVENT_TYPE, CALLBACK, USE_CAPTURE)
     
@@ -412,7 +382,7 @@ end
 -- Removes an event listener from the EventTarget.
 -- @param LISTENER lure.dom.EventListener
 --
-function public:removeEventListener(LISTENER)
+function class.public:removeEventListener(LISTENER)
     local targetlistener = nil
     
     for a=1, #self.eventListeners do
@@ -433,7 +403,7 @@ end
 -- Dispatch an event to this EventTarget.
 -- @param EVENT lure.dom.Event
 --
-function public:dispatchEvent(EVENT)
+function class.public:dispatchEvent(EVENT)
     -- Build the upward callstack to top level node, generally the Document Object
     local callstack = lure.dom.NodeList()
     local currentNode = self
@@ -513,4 +483,4 @@ end
 --
 -- Compile Class
 --
-return lure.lib.upperclass:compile(Node)
+return lure.lib.upperclass:compile(class)

@@ -1,18 +1,14 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define class
 --
-local Element = lure.lib.upperclass:define("DOMElement", lure.dom.Node)
+local class = lure.lib.upperclass:define("Element", lure.dom.Node)
 
 --
 -- Is this element a self closing tag
 --
-property : isSelfClosing {
+class.public : isSelfClosing {
     false;
     get='public';
     set='public';
@@ -22,7 +18,7 @@ property : isSelfClosing {
 --
 -- Returns the type information associated with the element
 --
-property : schemaTypeInfo {
+class.public : schemaTypeInfo {
     nil;
     get='public';
     set='private';
@@ -32,26 +28,29 @@ property : schemaTypeInfo {
 --
 -- Class constructor
 --
-function private:__construct(TAGNAME)
-    self:__constructparent(1)
+function class.public:init(TAGNAME)
+    lure.lib.upperclass:expect(TAGNAME):type('string'):ne(""):throw()
+    
+    lure.dom.Node.init(self, 1)
+    
     self.nodeName = lure.lib.utils:trim(TAGNAME)    
 end
 
 --
 -- __index metamethod
 --
-function private:__index(KEY)
+function class.private:__index(KEY)
     if KEY == 'tagName' then
         return self.nodeName
     end
-    
-    return lure.lib.upperclass.DEFAULT_BEHAVIOR
 end
 
 --
 -- Returns the value of an attribute
 --
-function public:getAttribute(ATTRIBUTE_NAME)
+function class.public:getAttribute(ATTRIBUTE_NAME)
+    lure.lib.upperclass:expect(ATTRIBUTE_NAME):type('string'):ne(''):throw()
+    
     local attrnode = self:getAttributeNode(ATTRIBUTE_NAME)
     if attrnode ~= nil then
         return attrnode.value
@@ -61,14 +60,16 @@ end
 --
 -- Returns the value of an attribute (with a namespace)
 --
-function public:getAttributeNS()
+function class.public:getAttributeNS()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Returns an attribute node as an Attribute object
 --
-function public:getAttributeNode(ATTRIBUTE_NAME) 
+function class.public:getAttributeNode(ATTRIBUTE_NAME) 
+    lure.lib.upperclass:expect(ATTRIBUTE_NAME):type('string'):ne(''):throw()
+    
     for a=1, self.attributes.length do
         if self.attributes[a].name == lure.lib.utils:trim(ATTRIBUTE_NAME) then
             return self.attributes[a]
@@ -79,14 +80,17 @@ end
 --
 -- Returns an attribute node (with a namespace) as an Attribute object
 --
-function public:getAttributeNodeNS()
+function class.public:getAttributeNodeNS()
     error("Method Not Yet Implimented")
 end
 
 --
 -- Adds a new attribute
 --
-function public:setAttribute(ATTRIBUTE_NAME, ATTRIBUTE_VALUE)
+function class.public:setAttribute(ATTRIBUTE_NAME, ATTRIBUTE_VALUE)
+    lure.lib.upperclass:expect(ATTRIBUTE_NAME):type('string'):ne(''):throw()
+    lure.lib.upperclass:expect(ATTRIBUTE_VALUE):ne(nil):throw()
+    
     for a=1, self.attributes.length do
         if self.attributes[a].name == lure.lib.utils:trim(ATTRIBUTE_NAME) then
             self.attributes[a].value = ATTRIBUTE_VALUE 
@@ -101,4 +105,4 @@ end
 --
 -- Compile class
 --
-return lure.lib.upperclass:compile(Element)
+return lure.lib.upperclass:compile(class)

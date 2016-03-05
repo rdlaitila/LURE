@@ -1,9 +1,10 @@
 print(_VERSION)
 local lure = require('lure.init')
-local window = nil
+local window = lure.bom.Window()
 
 function love.load()
-    window = lure.bom.Window()
+    if arg[#arg] == "-debug" then require("mobdebug").start() end
+    
     window.debugMessages = true
     window:resizeTo(love.graphics.getWidth(), 200)
     window:open("file://lure/res/html/about_blank.html")

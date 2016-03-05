@@ -1,47 +1,39 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define Class
 --
-local EventListener = lure.lib.upperclass:define("EventListener")
+local class = lure.lib.upperclass:define("EventListener")
 
 --
 -- Returns the name of the event this listener is attached to
 --
-property : name {
-    nil;
-    get='public';
-    set='public';
+class.public : name {
     type='string';
 }
 
 --
 -- Returns the function callback registered with this event listener
 --
-property : callback {
-    nil;
-    get='public';
-    set='private';
+class.public : callback { 
+    setter='private';
     type='any';
 }
 
 --
 -- Determines if this event listener is invoked on the lure.dom.Event.CAPTURE_PHASE
 --
-property : useCapture { 
-    false;
-    get='public';
-    set='public';
+class.public : useCapture { 
+    default=false;
+    type='boolean';
 }
 
 --
 -- Class Constructor
 --
-function private:__construct(EVENT_NAME, CALLBACK, USE_CAPTURE)
+function class.public:init(EVENT_NAME, CALLBACK, USE_CAPTURE)
+    lure.lib.upperclass:expect(EVENT_NAME):type('string'):throw()    
+    
     self.name = EVENT_NAME    
     
     self.callback = CALLBACK
@@ -56,7 +48,7 @@ end
 --
 -- This method is called whenever an event occurs of the type for which the EventListener interface was registered. 
 --
-function public:handleEvent(EVENT)    
+function class.public:handleEvent(EVENT)    
     if type(self.callback) == 'function' then        
         self.callback(EVENT)
     elseif type(self.callback) == 'table' then        
@@ -67,4 +59,4 @@ end
 --
 -- Compile Class
 --
-return lure.lib.upperclass:compile(EventListener)
+return lure.lib.upperclass:compile(class)

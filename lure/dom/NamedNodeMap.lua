@@ -1,18 +1,21 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define class
 --
-local NamedNodeMap = lure.lib.upperclass:define("DOMNamedNodeMap", DOMNodeList)
+local class = lure.lib.upperclass:define("lure.dom.NamedNodeMap", lure.dom.NodeList)
+
+--
+-- Constructor
+--
+function class.public:init()
+    lure.dom.NodeList.init(self)
+end
 
 --
 -- Returns the node with the specific name
 --
-function public:getNamedItem(NAME)
+function class.public:getNamedItem(NAME)
     for a=1, self.length do
         if self.nodes[a].nodeName == NAME then
             return self.nodes[a]
@@ -23,14 +26,14 @@ end
 --
 -- Returns the node with the specific name and namespace
 --
-function public:getNamedItemNS(NS, NAME)
+function class.public:getNamedItemNS(NS, NAME)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Removes the node with the specific name
 --
-function public:removeNamedItem(NAME)
+function class.public:removeNamedItem(NAME)
     local node = nil
     local nodeindex = nil
     for a=1, self.length do
@@ -45,14 +48,14 @@ end
 --
 -- Removes the node with the specific name and namespace
 --
-function public:removeNamedItemNS(NS, NAME)
+function class.public:removeNamedItemNS(NS, NAME)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Sets the specified node (by name)
 --
-function public:setNamedItem(ATTR_NODE)
+function class.public:setNamedItem(ATTR_NODE)
     for a=1, self.length do
         if self.nodes[a].nodeName == ATTR_NODE.nodeName then
             local returnnode = self.nodes[a]
@@ -67,14 +70,14 @@ end
 --
 -- Sets the specified node (by name and namespace)
 --
-function public:setNamedItemNS(NS, NAME, NODE)
+function class.public:setNamedItemNS(NS, NAME, NODE)
     error("Method Not Yet Implimented")
 end
 
 --
 -- Compile class
 --
-return lure.lib.upperclass:compile(NamedNodeMap)
+return lure.lib.upperclass:compile(class)
 
 
 

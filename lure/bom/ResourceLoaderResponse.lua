@@ -1,58 +1,48 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define Class
 --
-local ResourceLoaderResponse = lure.lib.upperclass:define("ResourceLoaderResponse")
+local class = lure.lib.upperclass:define("ResourceLoaderResponse")
 
 --
 -- Holds the resource error html content
 --
-property : content {
-    nil;
-    get='public';
-    set='private';
-    type='any';
+class.public : content {
+    setter='private';
+    type='string';
 }
 
 --
 -- Holds the resource response code
 --
-property : code {
-    0;
-    get='public';
-    set='private';
+class.public : code {
+    default=0;
+    setter='private';
     type='number';
 }
 
 --
 -- Holds the resource response success 
 --
-property : result {
-    true;
-    get='public';
-    set='private';
+class.public : result {
+    default=false;
+    setter='private';
     type='boolean';
 }
 
 --
 -- Holds the resource response message
 --
-property : message {
-    nil;
-    get='public';
-    set='private';
+class.public : message {
+    setter='private';
     type='string';
 }
 
 --
 -- Class Constructor
 --
-function private:__construct(RESULT, CODE, CONTENT, MESSAGE)
+function class.public:init(RESULT, CODE, CONTENT, MESSAGE)
     self.result = RESULT
     self.code = CODE
     self.content = CONTENT
@@ -62,4 +52,4 @@ end
 --
 -- Compile Class
 --
-return lure.lib.upperclass:compile(ResourceLoaderResponse)
+return lure.lib.upperclass:compile(class)

@@ -1,53 +1,60 @@
--- Obtain our base require path
-local BASE_PATH = select('1', ...):match(".-lure%.")
-
--- Require dependencies
-local lure = require(BASE_PATH..'init')
+local lure = require(select('1', ...):match(".-lure%.")..'init')
 
 --
 -- Define class
 --
-local DOMParser = lure.lib.upperclass:define('DOMParser')
+local class = lure.lib.upperclass:define('DOMParser')
 
 --
 -- Parse Debug
 --
-public.parsedebug = false
+class.public : parsedebug {
+    default=false;
+    type='boolean';
+}
 
 --
 -- Source Text
 --
-private.srcText = ""
+class.private : srcText {
+    default="";
+    type='string';
+}
 
 --
 -- Open Nodes
 --
-private.openNodes = nil
+class.private : openNodes {
+    type='table';
+}
 
 --
 -- Text Node Character Buffer
 --
-private.textNodeCharBuffer = ""
+class.private : textNodeCharBuffer {
+    default='';
+    type='string';
+}
 
 --
 -- DOM Document
 --
-property : document {
-    nil;
-    get='public';
-    set='private';
+class.private : document {    
+    type='lure.dom.Document';
 }   
 
 --
 -- Last Node Reference
 --
-private.lastNodeReference = nil
+class.private : lastNodeReference {
+    type='any';
+}
 
 --
 -- Class Constructor
 --
-function private:__construct(DOM_DOCUMENT)
-    self.document = lure.dom.Document()
+function class.public:init(DOCUMENT)
+    self.document = DOCUMENT or lure.dom.Document()
     
     self.lastNodeReference = self.document
     
@@ -57,7 +64,9 @@ end
 --
 -- ParseFromString
 --
-function public:parseFromString(XML_STRING)    
+function class.public:parseFromString(XML_STRING)
+    lure.lib.upperclass:expect(XML_STRING):type('string'):ne(""):throw()
+    
     local charindex = 1
     
     self.srcText = string.gsub(XML_STRING, "[\t]", "")
@@ -108,7 +117,10 @@ end
 --
 -- OpenNode
 --
-function private:openNode(NODE_INDEX, NODE_TYPE)    
+function class.private:openNode(NODE_INDEX, NODE_TYPE)
+    lure.lib.upperclass:expect(NODE_INDEX):type('number'):throw()
+    lure.lib.upperclass:expect(NODE_TYPE):type('string'):ne(""):throw()
+    
     if NODE_TYPE == "tag" then
         -- Obtain the full content between opening < and closing >
         local tagContent = string.match(self.srcText, "<(.-)>", NODE_INDEX)
@@ -174,7 +186,9 @@ end
 --
 -- CloseNode
 --
-function private:closeNode(NODE_INDEX)
+function class.private:closeNode(NODE_INDEX)
+    lure.lib.upperclass:expect(NODE_INDEX):type('number'):throw()
+    
     local tagname = lure.lib.utils:trim(string.match(self.srcText, "/?([%a%d]+)%s?", NODE_INDEX))            
     if lure.lib.utils:trim(self.openNodes[#self.openNodes].tagName:upper()) == lure.lib.utils:trim(tagname):upper() then
         table.remove(self.openNodes, #self.openNodes)            
@@ -186,11 +200,13 @@ end
 --
 -- Char
 --
-function private:char(INDEX)
+function class.private:char(INDEX)
+    lure.lib.upperclass:expect(INDEX):type('number'):throw()
+    
     return self.srcText:sub(INDEX, INDEX)
 end
 
 --
 -- Compile
 --
-return lure.lib.upperclass:compile(DOMParser)
+return lure.lib.upperclass:compile(class)
