@@ -58,7 +58,7 @@ class DOMParser {
                 return new XMLParser().parseFromString(str);
 
             default:
-                throw 'unsupported type ${Std.string(type)}'
+                throw 'unsupported type ${Std.string(type)}';
         }
     }
 }
