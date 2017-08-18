@@ -6,6 +6,7 @@ class HTMLParser {
     }
 
     public function parseFromString(str:DOMString):Document {
+        throw lib.Exceptions.NotImplemented;
         return null;
     }
 }
