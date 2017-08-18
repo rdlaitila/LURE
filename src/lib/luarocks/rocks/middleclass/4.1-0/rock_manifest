@@ -1,0 +1,11 @@
+rock_manifest = {
+   doc = {
+      ["CHANGELOG.md"] = "26fba8037915f89fa666a2483c7c4642",
+      ["README.md"] = "94e74fce200a25ce677f49e9aa9d38d6",
+      ["UPDATING.md"] = "59bf1b7f603ebd6d47dd93c54f6ab621"
+   },
+   lua = {
+      ["middleclass.lua"] = "dcd515fb80a4c359c0e2ea6ab696473c"
+   },
+   ["middleclass-4.1-0.rockspec"] = "c614421bedb71b61851177c0cb3627bb"
+}

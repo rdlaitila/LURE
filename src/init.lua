@@ -1,3 +1,9 @@
+local lure = require('lure')
+
+local node = lure.dom.Node:new()
+
+error('')
+
 -- Obtain our base require path
 local BASE_PATH = select('1', ...):match(".-lure%.")
 
