@@ -1,5 +1,3 @@
-package dom;
-
 import haxe.unit.TestCase;
 
 class XMLParser_test extends haxe.unit.TestCase {
@@ -9,7 +7,7 @@ class XMLParser_test extends haxe.unit.TestCase {
             parser.parseFromString(null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 }

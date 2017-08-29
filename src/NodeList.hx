@@ -1,30 +1,23 @@
-package dom;
-
 /**
  *  NodeList objects are collections of nodes such as those returned by properties
  *  such as Node.childNodes and the document.querySelectorAll() method.
  *
  *  https://developer.mozilla.org/en-US/docs/Web/API/NodeList
  */
-@:expose
-class NodeList {
+ @:keep
+abstract NodeList(Array<Node>) {
     /**
      *  length returns the number of items in a NodeList.
      *
      *  https://developer.mozilla.org/en-US/docs/Web/API/NodeList/length
      */
-    public var length(default, null):Int;
-
-    /**
-     *  internal store of available nodes in the list
-     */
-    private var items:Array<Node> = new Array<Node>();
+    public var length(get, never):Int;
 
     /**
      *  Constructor
      */
     public function new() {
-        this.length = 0;
+        this = new Array<Node>();
     }
 
     /**
@@ -38,9 +31,13 @@ class NodeList {
      *  @return dom.Node
      */
     public function item(index:Int):Node {
-        if (index < 0) return null;
-        if (index > this.items.length) return null;
-        return this.items[index];
+        if (index == null)
+            throw new TypeError("index cannot be null in call to item");
+
+        if (index > this.length)
+            return null;
+
+        return this[index];
     }
 
     /**
@@ -51,7 +48,7 @@ class NodeList {
      *  @return Iterator<null>
      */
     public function entries():Void {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
     }
 
     /**
@@ -61,7 +58,7 @@ class NodeList {
      *  https://developer.mozilla.org/en-US/docs/Web/API/NodeList/forEach
      */
     public function forEach():Void {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
     }
 
     /**
@@ -71,7 +68,7 @@ class NodeList {
      *  @return void
      */
     public function keys():Void {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
     }
 
     /**
@@ -82,6 +79,27 @@ class NodeList {
      *  @return void
      */
     public function values():Void {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
+    }
+
+    @:arrayAccess
+    function get(key:Int) {
+        if (key > this.length)
+            return null;
+        return this[key];
+    }
+
+    @:allow(NodeList_test)
+    private function add(item:Node) {
+        this.push(item);
+    }
+
+    private function remove(item:Node) {
+        this.remove(item);
+    }
+
+    private function get_length():Int {
+        return this.length;
     }
 }
+

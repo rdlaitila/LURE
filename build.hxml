@@ -1,0 +1,7 @@
+-cp src
+-dce full
+
+Node
+HTMLParser
+
+-lua build/lua/lure.lua

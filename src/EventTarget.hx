@@ -1,5 +1,3 @@
-package dom;
-
 /**
  *  EventTarget is an interface implemented by objects that can receive events
  *  and may have listeners for them. Element, document, and window are the most
@@ -16,7 +14,6 @@ class EventTarget {
      *  constructor
      */
     public function new() {
-
     }
 
     /**
@@ -30,7 +27,7 @@ class EventTarget {
      *  @param type -
      */
     public function addEventListener(type:DOMString, listener:Any):Void {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
     }
 
     /**
@@ -43,7 +40,7 @@ class EventTarget {
      *  @return void
      */
     public function dispatchEvent():Void {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
     }
 
     /**
@@ -58,6 +55,6 @@ class EventTarget {
      *  @return void
      */
     public function removeEventListener():Void {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
     }
 }

@@ -1,5 +1,3 @@
-package dom;
-
 /**
  *  DOMString is a UTF-16 String. As JavaScript already uses such strings, DOMString
  *  is mapped directly to a String. Passing null to a method or parameter accepting

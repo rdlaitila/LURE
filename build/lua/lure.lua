@@ -56,19 +56,30 @@ _hxClasses.Class = _hx_o({__fields__={__name__=true},__name__={"Class"}}); retur
 Enum = _hx_e();
 
 local _hx_exports = _hx_exports or {}
-_hx_exports["dom"] = _hx_exports["dom"] or _hx_e()
 local Array = _hx_e()
+local Attr = _hx_e()
+local _DOMTokenList = {}
+_DOMTokenList.DOMTokenList_Impl_ = _hx_e()
+local EventTarget = _hx_e()
+local Node = _hx_e()
+local Document = _hx_e()
+local Element = _hx_e()
+local Exceptions = _hx_e()
+local HTMLParser = _hx_e()
 local List = _hx_e()
 local _List = {}
 _List.ListNode = _hx_e()
 _List.ListIterator = _hx_e()
-local Main = _hx_e()
+local _NamedNodeMap = {}
+_NamedNodeMap.NamedNodeMap_Impl_ = _hx_e()
+local _NodeList = {}
+_NodeList.NodeList_Impl_ = _hx_e()
 local String = _hx_e()
 local Std = _hx_e()
-local dom = {}
-dom.Node = _hx_e()
 local haxe = {}
-haxe.Log = _hx_e()
+haxe.IMap = _hx_e()
+haxe.ds = {}
+haxe.ds.StringMap = _hx_e()
 haxe.io = {}
 haxe.io.Eof = _hx_e()
 local lua = {}
@@ -76,7 +87,14 @@ lua.Boot = _hx_e()
 
 local _hx_bind, _hx_bit, _hx_staticToInstance, _hx_funcToField, _hx_maxn, _hx_print, _hx_apply_self, _hx_box_mr, _hx_bit_clamp, _hx_table, _hx_bit_raw
 
-Array.new = {}
+Array.new = function() 
+  local self = _hx_new(Array.prototype)
+  Array.super(self)
+  return self
+end
+Array.super = function(self) 
+  _hx_tab_array(self,0);
+end
 Array.prototype = _hx_a(
   'join', function(self,sep) 
     local tbl = ({});
@@ -108,6 +126,203 @@ Array.prototype = _hx_a(
       cur_length = cur_length + 1;
       do return _gthis[cur_length - 1] end;
     end}) end
+  end
+)
+
+Attr.new = {}
+
+_DOMTokenList.DOMTokenList_Impl_.new = {}
+_DOMTokenList.DOMTokenList_Impl_._new = function() 
+  local this1 = Array.new();
+  do return this1 end;
+end
+
+EventTarget.new = function() 
+  local self = _hx_new()
+  EventTarget.super(self)
+  return self
+end
+EventTarget.super = function(self) 
+end
+_hx_exports["EventTarget"] = EventTarget
+
+Node.new = function() 
+  local self = _hx_new(Node.prototype)
+  Node.super(self)
+  return self
+end
+Node.super = function(self) 
+  self.childNodes = _NodeList.NodeList_Impl_._new();
+  EventTarget.super(self);
+end
+_hx_exports["Node"] = Node
+Node.prototype = _hx_a(
+  'appendChild', function(self,child) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'cloneNode', function(self,deep) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'compareDocumentPosition', function(self,node) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'contains', function(self,node) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'hasChildNodes', function(self) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'insertBefore', function(self,newNode,referenceNode) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'isDefaultNamespace', function(self,namespaceURI) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'isEqualNode', function(self,otherNode) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'isSameNode', function(self,other) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'lookupNamespaceURI', function(self,prefix) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'lookupPrefix', function(self) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'normalize', function(self) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'removeChild', function(self,child) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'replaceChild', function(self,newChild,oldChild) 
+    _G.error(Exceptions.NotImplemented,0);
+  end
+)
+Node.__super__ = EventTarget
+setmetatable(Node.prototype,{__index=EventTarget.prototype})
+
+Document.new = function() 
+  local self = _hx_new(Document.prototype)
+  Document.super(self)
+  return self
+end
+Document.super = function(self) 
+  Node.super(self);
+end
+_hx_exports["Document"] = Document
+Document.prototype = _hx_a(
+  
+)
+Document.__super__ = Node
+setmetatable(Document.prototype,{__index=Node.prototype})
+
+Element.new = function() 
+  local self = _hx_new(Element.prototype)
+  Element.super(self)
+  return self
+end
+Element.super = function(self) 
+  self.tagName = "";
+  self.namespaceURI = nil;
+  self.localName = "";
+  self.innerHTML = "";
+  self.id = "";
+  self.computedRole = "";
+  self.computedName = "";
+  self.className = "";
+  self.classList = _DOMTokenList.DOMTokenList_Impl_._new();
+  self.attributes = _NamedNodeMap.NamedNodeMap_Impl_._new();
+  Node.super(self);
+end
+_hx_exports["Element"] = Element
+Element.prototype = _hx_a(
+  'getAttribute', function(self,name) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'getAttributeNames', function(self) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'getAttributeNS', function(self,namespace,name) 
+    _G.error(Exceptions.NotImplemented,0);
+  end,
+  'set_innerHTML', function(self,html) 
+    _G.error(Exceptions.NotImplemented,0);
+  end
+)
+Element.__super__ = Node
+setmetatable(Element.prototype,{__index=Node.prototype})
+
+Exceptions.new = {}
+_hx_exports["Exceptions"] = Exceptions
+
+HTMLParser.new = function() 
+  local self = _hx_new(HTMLParser.prototype)
+  HTMLParser.super(self)
+  return self
+end
+HTMLParser.super = function(self) 
+  self.stack = List.new();
+end
+_hx_exports["HTMLParser"] = HTMLParser
+HTMLParser.prototype = _hx_a(
+  'parseFromString', function(self,str) 
+    local doc = Document.new();
+    local input = String.new(str);
+    local pos = 0;
+    local textBuffer = "";
+    while (pos < input.length) do 
+      if (input:charAt(pos) == "<") then 
+        if (textBuffer.length > 0) then 
+          pos = pos + self:openNode(input:substr(pos),3);
+        else
+          if (self:isCloseNodeAtIndex(input,pos)) then 
+            pos = pos + self:closeNode(pos);
+          else
+            if (self:isCommentNodeAtIndex(input,pos)) then 
+              pos = pos + self:openNode(input:substr(pos),8);
+            else
+              if (self:isCdataNodeAtIndex(input,pos)) then 
+                pos = pos + self:openNode(input:substr(pos),4);
+              else
+                if (self:isDoctypeDeclarationNodeAtIndex(input,pos)) then 
+                  pos = pos + self:openNode(input:substr(pos),7);
+                else
+                  pos = pos + self:openNode(input:substr(pos),1);
+                end;
+              end;
+            end;
+          end;
+        end;
+      else
+        textBuffer = textBuffer .. input:charAt(pos);
+        pos = pos + 1;
+      end;
+      end;
+    do return doc end
+  end,
+  'isCloseNodeAtIndex', function(self,input,index) 
+    do return input:charAt(index + 1) == "/" end
+  end,
+  'isCommentNodeAtIndex', function(self,input,index) 
+    do return input:indexOf("!--",index) ~= -1 end
+  end,
+  'isCdataNodeAtIndex', function(self,input,index) 
+    do return input:indexOf("![CDATA[",index) ~= -1 end
+  end,
+  'isDoctypeDeclarationNodeAtIndex', function(self,input,index) 
+    do return input:indexOf("!DOCTYPE",index) ~= -1 end
+  end,
+  'openNode', function(self,input,type) 
+    local tmp = type == 1;
+    do return 0 end
+  end,
+  'makeElement', function(self,tagName) 
+    do return Element.new() end
+  end,
+  'closeNode', function(self,index) 
+    do return index end
   end
 )
 
@@ -146,13 +361,26 @@ _List.ListIterator.prototype = _hx_a(
   end
 )
 
-Main.new = {}
-Main.main = function() 
-  haxe.Log.trace("Hello World",_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Main.hx",lineNumber=3,className="Main",methodName="main"}));
-  local node = dom.Node.new();
+_NamedNodeMap.NamedNodeMap_Impl_.new = {}
+_NamedNodeMap.NamedNodeMap_Impl_._new = function() 
+  local this1 = haxe.ds.StringMap.new();
+  do return this1 end;
 end
 
-String.new = {}
+_NodeList.NodeList_Impl_.new = {}
+_NodeList.NodeList_Impl_._new = function() 
+  local this1 = Array.new();
+  do return this1 end;
+end
+
+String.new = function(string) 
+  local self = _hx_new(String.prototype)
+  String.super(self,string)
+  self = string
+  return self
+end
+String.super = function(self,string) 
+end
 String.__index = function(s,k) 
   if (k == "length") then 
     do return _G.string.len(s) end;
@@ -180,8 +408,40 @@ String.fromCharCode = function(code)
   do return _G.string.char(code) end;
 end
 String.prototype = _hx_a(
+  'indexOf', function(self,str,startIndex) 
+    if (startIndex == nil) then 
+      startIndex = 1;
+    else
+      startIndex = startIndex + 1;
+    end;
+    local r = _G.string.find(self,str,startIndex,true);
+    if ((r ~= nil) and (r > 0)) then 
+      do return r - 1 end;
+    else
+      do return -1 end;
+    end;
+  end,
   'toString', function(self) 
     do return self end
+  end,
+  'charAt', function(self,index) 
+    do return _G.string.sub(self,index + 1,index + 1) end
+  end,
+  'substr', function(self,pos,len) 
+    if ((len == nil) or (len > (pos + self.length))) then 
+      len = self.length;
+    else
+      if (len < 0) then 
+        len = self.length + len;
+      end;
+    end;
+    if (pos < 0) then 
+      pos = self.length + pos;
+    end;
+    if (pos < 0) then 
+      pos = 0;
+    end;
+    do return _G.string.sub(self,pos + 1,pos + len) end
   end
 )
 
@@ -190,33 +450,18 @@ Std.string = function(s)
   do return lua.Boot.__string_rec(s) end;
 end
 
-dom.Node.new = function() 
+haxe.IMap.new = {}
+
+haxe.ds.StringMap.new = function() 
   local self = _hx_new()
-  dom.Node.super(self)
+  haxe.ds.StringMap.super(self)
   return self
 end
-dom.Node.super = function(self) 
-  self.childNodes = List.new();
-  haxe.Log.trace("Hello from Node",_hx_o({__fields__={fileName=true,lineNumber=true,className=true,methodName=true},fileName="Node.hx",lineNumber=11,className="dom.Node",methodName="new"}));
+haxe.ds.StringMap.super = function(self) 
+  self.v = {}
+  self.k = {}
 end
-_hx_exports["dom"]["Node"] = dom.Node
-
-haxe.Log.new = {}
-haxe.Log.trace = function(v,infos) 
-  local str = nil;
-  if (infos ~= nil) then 
-    str = infos.fileName .. ":" .. infos.lineNumber .. ": " .. Std.string(v);
-    if (infos.customParams ~= nil) then 
-      str = str .. ("," .. infos.customParams:join(","));
-    end;
-  else
-    str = v;
-  end;
-  if (str == nil) then 
-    str = "null";
-  end;
-  _hx_print(str);
-end
+haxe.ds.StringMap.__interfaces__ = {haxe.IMap}
 
 haxe.io.Eof.new = {}
 haxe.io.Eof.prototype = _hx_a(
@@ -376,11 +621,22 @@ _hx_string_mt.__concat = _hx_string_mt.__add
 _hx_array_mt.__index = Array.prototype
 
 local _hx_static_init = function()
+  Node.ATTRIBUTE_NODE = 2
+  Node.CDATA_SECTION_NODE = 4
+  Node.COMMENT_NODE = 8
+  Node.DOCUMENT_NODE = 9
+  Node.DOCUMENT_TYPE_NODE = 10
+  Node.DOCUMENT_FRAGMENT_NODE = 11
+  Node.ELEMENT_NODE = 1
+  Node.ENTITY_REFERENCE_NODE = 5
+  Node.ENTITY_NODE = 6
+  Node.NOTATION_NODE = 12
+  Node.PROCESSING_INSTRUCTION_NODE = 7
+  Node.TEXT_NODE = 3
+  Exceptions.NotImplemented = "Not Implemented"
   lua.Boot.hiddenFields = {__id__=true, hx__closures=true, super=true, prototype=true, __fields__=true, __ifields__=true, __class__=true, __properties__=true}
   
 end
 
-_hx_print = print or (function() end)
 _hx_static_init();
-Main.main()
 return _hx_exports

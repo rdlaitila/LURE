@@ -1,5 +1,3 @@
-package dom;
-
 import haxe.unit.TestCase;
 
 class EventTarget_test extends haxe.unit.TestCase {
@@ -9,7 +7,7 @@ class EventTarget_test extends haxe.unit.TestCase {
             eventTarget.addEventListener(null, null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -19,7 +17,7 @@ class EventTarget_test extends haxe.unit.TestCase {
             eventTarget.dispatchEvent();
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -29,7 +27,7 @@ class EventTarget_test extends haxe.unit.TestCase {
             eventTarget.removeEventListener();
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 }

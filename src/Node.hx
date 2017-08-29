@@ -1,5 +1,3 @@
-package dom;
-
 /**
  *  Node is an interface from which a number of DOM API object types inherit; it
  *  allows these various types to be treated similarly, for example inheriting the
@@ -16,6 +14,7 @@ package dom;
  *  https://developer.mozilla.org/en-US/docs/Web/API/Node
  */
 @:expose
+@:keep
 class Node extends EventTarget {
     /**
      *  An Attribute of an Element. The element attributes are no longer
@@ -242,7 +241,7 @@ class Node extends EventTarget {
      *  @param Node -
      */
     public function appendChild(child:Node):Node {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
         return null;
     }
 
@@ -257,7 +256,7 @@ class Node extends EventTarget {
      *  @return Node - The new node that will be a clone of node
      */
     public function cloneNode(deep:Bool):Node {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
         return null;
     }
 
@@ -279,7 +278,7 @@ class Node extends EventTarget {
      *  @param node -
      */
     public function compareDocumentPosition(node:Node):Void {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
     }
 
     /**
@@ -292,7 +291,7 @@ class Node extends EventTarget {
      *  @return Bool
      */
     public function contains(node:Node):Bool {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
         return false;
     }
 
@@ -305,7 +304,7 @@ class Node extends EventTarget {
      *  @return Bool
      */
     public function hasChildNodes():Bool {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
         return false;
     }
 
@@ -320,7 +319,7 @@ class Node extends EventTarget {
      *  @return Node
      */
     public function insertBefore(newNode:Node, referenceNode:Node):Node {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
         return null;
     }
 
@@ -335,8 +334,8 @@ class Node extends EventTarget {
      *  @return Bool
      */
     public function isDefaultNamespace(namespaceURI):Bool {
-        throw lib.Exceptions.NotImplemented;
-        return null;
+        throw Exceptions.NotImplemented;
+        return false;
     }
 
     /**
@@ -352,8 +351,8 @@ class Node extends EventTarget {
      *  @return Bool
      */
     public function isEqualNode(otherNode:Node):Bool {
-        throw lib.Exceptions.NotImplemented;
-        return null;
+        throw Exceptions.NotImplemented;
+        return false;
     }
 
     /**
@@ -366,8 +365,8 @@ class Node extends EventTarget {
      *  @return Bool
      */
     public function isSameNode(other:Node):Bool {
-        throw lib.Exceptions.NotImplemented;
-        return null;
+        throw Exceptions.NotImplemented;
+        return false;
     }
 
     /**
@@ -378,7 +377,7 @@ class Node extends EventTarget {
      *  https://developer.mozilla.org/en-US/docs/Web/API/Node/lookupNamespaceURI
      */
     public function lookupNamespaceURI(prefix:String):String {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
         return null;
     }
 
@@ -392,7 +391,7 @@ class Node extends EventTarget {
      *  @return DOMString
      */
     public function lookupPrefix():DOMString {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
         return null;
     }
 
@@ -404,7 +403,7 @@ class Node extends EventTarget {
      *  https://developer.mozilla.org/en-US/docs/Web/API/Node/normalize
      */
     public function normalize():Void {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
     }
 
     /**
@@ -417,7 +416,7 @@ class Node extends EventTarget {
      *  @return Node
      */
     public function removeChild(child:Node):Node {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
         return null;
     }
 
@@ -433,7 +432,7 @@ class Node extends EventTarget {
      *  @return Node is the replaced node. This is the same node as oldChild.
      */
     public function replaceChild(newChild:Node, oldChild:Node):Node {
-        throw lib.Exceptions.NotImplemented;
+        throw Exceptions.NotImplemented;
         return null;
     }
 }

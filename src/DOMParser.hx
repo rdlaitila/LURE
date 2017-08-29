@@ -1,5 +1,3 @@
-package dom;
-
 /**
  *  Valid types to supply to DOMParser.parseFromString
  *

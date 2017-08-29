@@ -1,5 +1,3 @@
-package dom;
-
 import haxe.unit.TestCase;
 
 class Node_test extends haxe.unit.TestCase {
@@ -9,17 +7,17 @@ class Node_test extends haxe.unit.TestCase {
             node.appendChild(null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
     public function test_cloneNode_throws_not_implemented() {
         try {
             var node = new Node();
-            node.cloneNode(null);
+            node.cloneNode(false);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -29,7 +27,7 @@ class Node_test extends haxe.unit.TestCase {
             node.compareDocumentPosition(null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -39,7 +37,7 @@ class Node_test extends haxe.unit.TestCase {
             node.contains(null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -49,7 +47,7 @@ class Node_test extends haxe.unit.TestCase {
             node.hasChildNodes();
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -59,7 +57,7 @@ class Node_test extends haxe.unit.TestCase {
             node.insertBefore(null, null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -69,7 +67,7 @@ class Node_test extends haxe.unit.TestCase {
             node.isDefaultNamespace(null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -79,7 +77,7 @@ class Node_test extends haxe.unit.TestCase {
             node.isEqualNode(null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -89,7 +87,7 @@ class Node_test extends haxe.unit.TestCase {
             node.isSameNode(null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -99,7 +97,7 @@ class Node_test extends haxe.unit.TestCase {
             node.lookupNamespaceURI(null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -109,7 +107,7 @@ class Node_test extends haxe.unit.TestCase {
             node.lookupPrefix();
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -119,7 +117,7 @@ class Node_test extends haxe.unit.TestCase {
             node.normalize();
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -129,7 +127,7 @@ class Node_test extends haxe.unit.TestCase {
             node.removeChild(null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 
@@ -139,7 +137,7 @@ class Node_test extends haxe.unit.TestCase {
             node.replaceChild(null, null);
         }
         catch(err:String) {
-            assertEquals(lib.Exceptions.NotImplemented, err);
+            assertEquals(Exceptions.NotImplemented, err);
         }
     }
 }
