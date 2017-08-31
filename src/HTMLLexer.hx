@@ -9,7 +9,11 @@ class HTMLLexer
      */
     private var input:haxe.io.Input;
 
-    private var tokens:Map<HTMLToken, Bool> = new Map<HTMLToken, Bool>();
+    /**
+     *  holds a map of emitted tokens from this lexer. The boolean indicates if
+     *  the token can be re-used in another call to peek() or next()
+     */
+    private var emitted:Map<HTMLToken, Bool> = new Map<HTMLToken, Bool>();
 
     /**
      *  constructor
