@@ -65,6 +65,7 @@ local Node = _hx_e()
 local Document = _hx_e()
 local Element = _hx_e()
 local Exceptions = _hx_e()
+local HTMLLexer = _hx_e()
 local HTMLParser = _hx_e()
 local List = _hx_e()
 local _List = {}
@@ -81,6 +82,7 @@ haxe.IMap = _hx_e()
 haxe.ds = {}
 haxe.ds.StringMap = _hx_e()
 haxe.io = {}
+haxe.io.Input = _hx_e()
 haxe.io.Eof = _hx_e()
 local lua = {}
 lua.Boot = _hx_e()
@@ -257,12 +259,21 @@ setmetatable(Element.prototype,{__index=Node.prototype})
 Exceptions.new = {}
 _hx_exports["Exceptions"] = Exceptions
 
+HTMLLexer.new = function(input) 
+  local self = _hx_new()
+  HTMLLexer.super(self,input)
+  return self
+end
+HTMLLexer.super = function(self,input) 
+end
+
 HTMLParser.new = function() 
   local self = _hx_new(HTMLParser.prototype)
   HTMLParser.super(self)
   return self
 end
 HTMLParser.super = function(self) 
+  self.lex = HTMLLexer.new(nil);
   self.stack = List.new();
 end
 _hx_exports["HTMLParser"] = HTMLParser
@@ -463,6 +474,8 @@ haxe.ds.StringMap.super = function(self)
 end
 haxe.ds.StringMap.__interfaces__ = {haxe.IMap}
 
+haxe.io.Input.new = {}
+
 haxe.io.Eof.new = {}
 haxe.io.Eof.prototype = _hx_a(
   'toString', function(self) 
@@ -634,6 +647,366 @@ local _hx_static_init = function()
   Node.PROCESSING_INSTRUCTION_NODE = 7
   Node.TEXT_NODE = 3
   Exceptions.NotImplemented = "Not Implemented"
+  HTMLParser.elements = _hx_tab_array({[0]="a", "abbr", "acronym", "address", "applet", "area", "article", "aside", "audio", "b", "base", "basefont", "bdi", "bdo", "bgsound", "big", "blink", "blockquote", "body", "br", "button", "canvas", "caption", "center", "cite", "code", "col", "colgroup", "command", "content", "data", "datalist", "dd", "del", "details", "dfn", "dialog", "dir", "div", "dl", "dt", "element", "em", "embed", "fieldset", "figcaption", "figure", "font", "footer", "form", "frame", "frameset", "h1", "h2", "h3", "h4", "h5", "h6", "head", "header", "hgroup", "hr", "html", "i", "iframe", "image", "img", "input", "ins", "isindex", "kbd", "keygen", "label", "legend", "li", "link", "listing", "main", "map", "mark", "marquee", "menu", "menuitem", "meta", "meter", "multicol", "nav", "nobr", "noembed", "noframes", "noscript", "object", "ol", "optgroup", "option", "output", "p", "param", "picture", "plaintext", "pre", "progress", "q", "rp", "rt", "rtc", "ruby", "s", "samp", "script", "section", "select", "shadow", "slot", "small", "source", "spacer", "span", "strike", "strong", "style", "sub", "summary", "sup", "table", "tbody", "td", "template", "textarea", "tfoot", "th", "thead", "time", "title", "tr", "track", "tt", "u", "ul", "var", "video", "wbr", "xmp" }, 143)
+  HTMLParser.attr2elem = (function() 
+    local _hx_2
+    
+    local _g = haxe.ds.StringMap.new();
+    
+    _g.v["accept"] = _hx_tab_array({[0]="form", "input" }, 2);
+    _g.k["accept"] = true;
+    
+    _g.v["accept-charset"] = _hx_tab_array({[0]="form" }, 1);
+    _g.k["accept-charset"] = true;
+    
+    _g.v["accesskey"] = _hx_tab_array({[0]="*" }, 1);
+    _g.k["accesskey"] = true;
+    
+    _g.v["action"] = _hx_tab_array({[0]="form" }, 1);
+    _g.k["action"] = true;
+    
+    _g.v["align"] = _hx_tab_array({[0]="applet", "caption", "col", "colgroup", "hr", "iframe", "img", "table", "tbody", "td", "tfoot", "th", "thead", "tr" }, 14);
+    _g.k["align"] = true;
+    
+    _g.v["alt"] = _hx_tab_array({[0]="applet", "area", "img", "input" }, 4);
+    _g.k["alt"] = true;
+    
+    _g.v["async"] = _hx_tab_array({[0]="script" }, 1);
+    _g.k["async"] = true;
+    
+    _g.v["autocomplete"] = _hx_tab_array({[0]="form", "input" }, 2);
+    _g.k["autocomplete"] = true;
+    
+    _g.v["autofocus"] = _hx_tab_array({[0]="button", "input", "keygen", "select", "textarea" }, 5);
+    _g.k["autofocus"] = true;
+    
+    _g.v["autoplay"] = _hx_tab_array({[0]="audio", "video" }, 2);
+    _g.k["autoplay"] = true;
+    
+    _g.v["autosave"] = _hx_tab_array({[0]="input" }, 1);
+    _g.k["autosave"] = true;
+    
+    _g.v["bgcolor"] = _hx_tab_array({[0]="body", "col", "colgroup", "marquee", "table", "tbody", "tfoot", "td", "th", "tr" }, 10);
+    _g.k["bgcolor"] = true;
+    
+    _g.v["border"] = _hx_tab_array({[0]="img", "object", "table" }, 3);
+    _g.k["border"] = true;
+    
+    _g.v["buffered"] = _hx_tab_array({[0]="audio", "video" }, 2);
+    _g.k["buffered"] = true;
+    
+    _g.v["challenge"] = _hx_tab_array({[0]="keygen" }, 1);
+    _g.k["challenge"] = true;
+    
+    _g.v["charset"] = _hx_tab_array({[0]="meta", "script" }, 2);
+    _g.k["charset"] = true;
+    
+    _g.v["checked"] = _hx_tab_array({[0]="command", "input" }, 2);
+    _g.k["checked"] = true;
+    
+    _g.v["cite"] = _hx_tab_array({[0]="blockquote", "del", "ins", "q" }, 4);
+    _g.k["cite"] = true;
+    
+    _g.v["class"] = _hx_tab_array({[0]="*" }, 1);
+    _g.k["class"] = true;
+    
+    _g.v["code"] = _hx_tab_array({[0]="applet" }, 1);
+    _g.k["code"] = true;
+    
+    _g.v["codebase"] = _hx_tab_array({[0]="applet" }, 1);
+    _g.k["codebase"] = true;
+    
+    _g.v["color"] = _hx_tab_array({[0]="basefont", "font", "hr" }, 3);
+    _g.k["color"] = true;
+    
+    _g.v["cols"] = _hx_tab_array({[0]="textarea" }, 1);
+    _g.k["cols"] = true;
+    
+    _g.v["colspan"] = _hx_tab_array({[0]="td", "th" }, 2);
+    _g.k["colspan"] = true;
+    
+    _g.v["content"] = _hx_tab_array({[0]="meta" }, 1);
+    _g.k["content"] = true;
+    
+    _g.v["contenteditable"] = _hx_tab_array({[0]="*" }, 1);
+    _g.k["contenteditable"] = true;
+    
+    _g.v["contextmenu"] = _hx_tab_array({[0]="*" }, 1);
+    _g.k["contextmenu"] = true;
+    
+    _g.v["controls"] = _hx_tab_array({[0]="audio", "video" }, 2);
+    _g.k["controls"] = true;
+    
+    _g.v["coords"] = _hx_tab_array({[0]="area" }, 1);
+    _g.k["coords"] = true;
+    
+    _g.v["crossorigin"] = _hx_tab_array({[0]="audio", "img", "link", "script", "video" }, 5);
+    _g.k["crossorigin"] = true;
+    
+    _g.v["data"] = _hx_tab_array({[0]="object" }, 1);
+    _g.k["data"] = true;
+    
+    _g.v["data-*"] = _hx_tab_array({[0]="*" }, 1);
+    _g.k["data-*"] = true;
+    
+    _g.v["datetime"] = _hx_tab_array({[0]="del", "ins", "time" }, 3);
+    _g.k["datetime"] = true;
+    
+    _g.v["default"] = _hx_tab_array({[0]="track" }, 1);
+    _g.k["default"] = true;
+    
+    _g.v["defer"] = _hx_tab_array({[0]="script" }, 1);
+    _g.k["defer"] = true;
+    
+    _g.v["dir"] = _hx_tab_array({[0]="*" }, 1);
+    _g.k["dir"] = true;
+    
+    _g.v["dirname"] = _hx_tab_array({[0]="input", "textarea" }, 2);
+    _g.k["dirname"] = true;
+    
+    _g.v["disabled"] = _hx_tab_array({[0]="button", "command", "fieldset", "input", "keygen", "optgroup", "option", "select", "textarea" }, 9);
+    _g.k["disabled"] = true;
+    
+    _g.v["download"] = _hx_tab_array({[0]="a", "area" }, 2);
+    _g.k["download"] = true;
+    
+    _g.v["draggable"] = _hx_tab_array({[0]="*" }, 1);
+    _g.k["draggable"] = true;
+    
+    _g.v["dropzone"] = _hx_tab_array({[0]="*" }, 1);
+    _g.k["dropzone"] = true;
+    
+    _g.v["enctype"] = _hx_tab_array({[0]="form" }, 1);
+    _g.k["enctype"] = true;
+    
+    _g.v["for"] = _hx_tab_array({[0]="label", "output" }, 2);
+    _g.k["for"] = true;
+    
+    _g.v["form"] = _hx_tab_array({[0]="button", "fieldset", "input", "keygen", "label", "meter", "object", "progress", "select", "textarea" }, 10);
+    _g.k["form"] = true;
+    
+    _g.v["formaction"] = _hx_tab_array({[0]="input", "button" }, 2);
+    _g.k["formaction"] = true;
+    
+    _g.v["headers"] = _hx_tab_array({[0]="td", "th" }, 2);
+    _g.k["headers"] = true;
+    
+    _g.v["height"] = _hx_tab_array({[0]="canvas", "embed", "iframe", "img", "input", "object", "video" }, 7);
+    _g.k["height"] = true;
+    
+    _g.v["hidden"] = _hx_tab_array({ }, 0);
+    _g.k["hidden"] = true;
+    
+    _g.v["high"] = _hx_tab_array({ }, 0);
+    _g.k["high"] = true;
+    
+    _g.v["href"] = _hx_tab_array({ }, 0);
+    _g.k["href"] = true;
+    
+    _g.v["hreflang"] = _hx_tab_array({ }, 0);
+    _g.k["hreflang"] = true;
+    
+    _g.v["http-equiv"] = _hx_tab_array({ }, 0);
+    _g.k["http-equiv"] = true;
+    
+    _g.v["icon"] = _hx_tab_array({ }, 0);
+    _g.k["icon"] = true;
+    
+    _g.v["id"] = _hx_tab_array({ }, 0);
+    _g.k["id"] = true;
+    
+    _g.v["integrity"] = _hx_tab_array({ }, 0);
+    _g.k["integrity"] = true;
+    
+    _g.v["ismap"] = _hx_tab_array({ }, 0);
+    _g.k["ismap"] = true;
+    
+    _g.v["itemprop"] = _hx_tab_array({ }, 0);
+    _g.k["itemprop"] = true;
+    
+    _g.v["keytype"] = _hx_tab_array({ }, 0);
+    _g.k["keytype"] = true;
+    
+    _g.v["kind"] = _hx_tab_array({ }, 0);
+    _g.k["kind"] = true;
+    
+    _g.v["label"] = _hx_tab_array({ }, 0);
+    _g.k["label"] = true;
+    
+    _g.v["lang"] = _hx_tab_array({ }, 0);
+    _g.k["lang"] = true;
+    
+    _g.v["language"] = _hx_tab_array({ }, 0);
+    _g.k["language"] = true;
+    
+    _g.v["list"] = _hx_tab_array({ }, 0);
+    _g.k["list"] = true;
+    
+    _g.v["loop"] = _hx_tab_array({ }, 0);
+    _g.k["loop"] = true;
+    
+    _g.v["low"] = _hx_tab_array({ }, 0);
+    _g.k["low"] = true;
+    
+    _g.v["manifest"] = _hx_tab_array({ }, 0);
+    _g.k["manifest"] = true;
+    
+    _g.v["max"] = _hx_tab_array({ }, 0);
+    _g.k["max"] = true;
+    
+    _g.v["maxlength"] = _hx_tab_array({ }, 0);
+    _g.k["maxlength"] = true;
+    
+    _g.v["minlength"] = _hx_tab_array({ }, 0);
+    _g.k["minlength"] = true;
+    
+    _g.v["media"] = _hx_tab_array({ }, 0);
+    _g.k["media"] = true;
+    
+    _g.v["method"] = _hx_tab_array({ }, 0);
+    _g.k["method"] = true;
+    
+    _g.v["min"] = _hx_tab_array({ }, 0);
+    _g.k["min"] = true;
+    
+    _g.v["multiple"] = _hx_tab_array({ }, 0);
+    _g.k["multiple"] = true;
+    
+    _g.v["muted"] = _hx_tab_array({ }, 0);
+    _g.k["muted"] = true;
+    
+    _g.v["name"] = _hx_tab_array({ }, 0);
+    _g.k["name"] = true;
+    
+    _g.v["novalidate"] = _hx_tab_array({ }, 0);
+    _g.k["novalidate"] = true;
+    
+    _g.v["open"] = _hx_tab_array({ }, 0);
+    _g.k["open"] = true;
+    
+    _g.v["optimum"] = _hx_tab_array({ }, 0);
+    _g.k["optimum"] = true;
+    
+    _g.v["pattern"] = _hx_tab_array({ }, 0);
+    _g.k["pattern"] = true;
+    
+    _g.v["ping"] = _hx_tab_array({ }, 0);
+    _g.k["ping"] = true;
+    
+    _g.v["placeholder"] = _hx_tab_array({ }, 0);
+    _g.k["placeholder"] = true;
+    
+    _g.v["poster"] = _hx_tab_array({ }, 0);
+    _g.k["poster"] = true;
+    
+    _g.v["preload"] = _hx_tab_array({ }, 0);
+    _g.k["preload"] = true;
+    
+    _g.v["radiogroup"] = _hx_tab_array({ }, 0);
+    _g.k["radiogroup"] = true;
+    
+    _g.v["readonly"] = _hx_tab_array({ }, 0);
+    _g.k["readonly"] = true;
+    
+    _g.v["rel"] = _hx_tab_array({ }, 0);
+    _g.k["rel"] = true;
+    
+    _g.v["required"] = _hx_tab_array({ }, 0);
+    _g.k["required"] = true;
+    
+    _g.v["reversed"] = _hx_tab_array({ }, 0);
+    _g.k["reversed"] = true;
+    
+    _g.v["rows"] = _hx_tab_array({ }, 0);
+    _g.k["rows"] = true;
+    
+    _g.v["rowspan"] = _hx_tab_array({ }, 0);
+    _g.k["rowspan"] = true;
+    
+    _g.v["sandbox"] = _hx_tab_array({ }, 0);
+    _g.k["sandbox"] = true;
+    
+    _g.v["scope"] = _hx_tab_array({ }, 0);
+    _g.k["scope"] = true;
+    
+    _g.v["scoped"] = _hx_tab_array({ }, 0);
+    _g.k["scoped"] = true;
+    
+    _g.v["seamless"] = _hx_tab_array({ }, 0);
+    _g.k["seamless"] = true;
+    
+    _g.v["selected"] = _hx_tab_array({ }, 0);
+    _g.k["selected"] = true;
+    
+    _g.v["shape"] = _hx_tab_array({ }, 0);
+    _g.k["shape"] = true;
+    
+    _g.v["size"] = _hx_tab_array({ }, 0);
+    _g.k["size"] = true;
+    
+    _g.v["sizes"] = _hx_tab_array({ }, 0);
+    _g.k["sizes"] = true;
+    
+    _g.v["slot"] = _hx_tab_array({ }, 0);
+    _g.k["slot"] = true;
+    
+    _g.v["span"] = _hx_tab_array({ }, 0);
+    _g.k["span"] = true;
+    
+    _g.v["spellcheck"] = _hx_tab_array({ }, 0);
+    _g.k["spellcheck"] = true;
+    
+    _g.v["src"] = _hx_tab_array({ }, 0);
+    _g.k["src"] = true;
+    
+    _g.v["srcdoc"] = _hx_tab_array({ }, 0);
+    _g.k["srcdoc"] = true;
+    
+    _g.v["srclang"] = _hx_tab_array({ }, 0);
+    _g.k["srclang"] = true;
+    
+    _g.v["srcset"] = _hx_tab_array({ }, 0);
+    _g.k["srcset"] = true;
+    
+    _g.v["start"] = _hx_tab_array({ }, 0);
+    _g.k["start"] = true;
+    
+    _g.v["step"] = _hx_tab_array({ }, 0);
+    _g.k["step"] = true;
+    
+    _g.v["style"] = _hx_tab_array({ }, 0);
+    _g.k["style"] = true;
+    
+    _g.v["summary"] = _hx_tab_array({ }, 0);
+    _g.k["summary"] = true;
+    
+    _g.v["tabindex"] = _hx_tab_array({ }, 0);
+    _g.k["tabindex"] = true;
+    
+    _g.v["target"] = _hx_tab_array({ }, 0);
+    _g.k["target"] = true;
+    
+    _g.v["title"] = _hx_tab_array({ }, 0);
+    _g.k["title"] = true;
+    
+    _g.v["type"] = _hx_tab_array({ }, 0);
+    _g.k["type"] = true;
+    
+    _g.v["usemap"] = _hx_tab_array({ }, 0);
+    _g.k["usemap"] = true;
+    
+    _g.v["value"] = _hx_tab_array({ }, 0);
+    _g.k["value"] = true;
+    
+    _g.v["width"] = _hx_tab_array({ }, 0);
+    _g.k["width"] = true;
+    
+    _g.v["wrap"] = _hx_tab_array({ }, 0);
+    _g.k["wrap"] = true;
+    
+    _hx_2 = _g;
+    return _hx_2
+  end )()
   lua.Boot.hiddenFields = {__id__=true, hx__closures=true, super=true, prototype=true, __fields__=true, __ifields__=true, __class__=true, __properties__=true}
   
 end
