@@ -1,0 +1,16 @@
+{
+    "codedox": {
+        "fileheader": {
+            "templates": {
+                "*": [
+                    "${license_mit}"
+                ]
+            },
+            "params": {
+                "haxe": {
+                    "company": "Regan Daniel Laitila"
+                }
+            }
+        }
+    }
+}

@@ -65,8 +65,11 @@ local Node = _hx_e()
 local Document = _hx_e()
 local Element = _hx_e()
 local Exceptions = _hx_e()
+local HTMLDocument = _hx_e()
 local HTMLLexer = _hx_e()
 local HTMLParser = _hx_e()
+local HTMLToken = _hx_e()
+local HTMLTokenType = _hx_e()
 local List = _hx_e()
 local _List = {}
 _List.ListNode = _hx_e()
@@ -82,8 +85,12 @@ haxe.IMap = _hx_e()
 haxe.ds = {}
 haxe.ds.StringMap = _hx_e()
 haxe.io = {}
+haxe.io.Bytes = _hx_e()
 haxe.io.Input = _hx_e()
+haxe.io.BytesInput = _hx_e()
 haxe.io.Eof = _hx_e()
+haxe.io.Error = _hx_e()
+haxe.io.StringInput = _hx_e()
 local lua = {}
 lua.Boot = _hx_e()
 
@@ -259,13 +266,33 @@ setmetatable(Element.prototype,{__index=Node.prototype})
 Exceptions.new = {}
 _hx_exports["Exceptions"] = Exceptions
 
+HTMLDocument.new = function() 
+  local self = _hx_new(HTMLDocument.prototype)
+  HTMLDocument.super(self)
+  return self
+end
+HTMLDocument.super = function(self) 
+  Document.super(self);
+end
+_hx_exports["HTMLDocument"] = HTMLDocument
+HTMLDocument.prototype = _hx_a(
+  
+)
+HTMLDocument.__super__ = Document
+setmetatable(HTMLDocument.prototype,{__index=Document.prototype})
+
 HTMLLexer.new = function(input) 
-  local self = _hx_new()
+  local self = _hx_new(HTMLLexer.prototype)
   HTMLLexer.super(self,input)
   return self
 end
 HTMLLexer.super = function(self,input) 
 end
+HTMLLexer.prototype = _hx_a(
+  'next', function(self) 
+    do return nil end
+  end
+)
 
 HTMLParser.new = function() 
   local self = _hx_new(HTMLParser.prototype)
@@ -273,69 +300,67 @@ HTMLParser.new = function()
   return self
 end
 HTMLParser.super = function(self) 
-  self.lex = HTMLLexer.new(nil);
   self.stack = List.new();
 end
 _hx_exports["HTMLParser"] = HTMLParser
 HTMLParser.prototype = _hx_a(
   'parseFromString', function(self,str) 
-    local doc = Document.new();
-    local input = String.new(str);
-    local pos = 0;
-    local textBuffer = "";
-    while (pos < input.length) do 
-      if (input:charAt(pos) == "<") then 
-        if (textBuffer.length > 0) then 
-          pos = pos + self:openNode(input:substr(pos),3);
-        else
-          if (self:isCloseNodeAtIndex(input,pos)) then 
-            pos = pos + self:closeNode(pos);
-          else
-            if (self:isCommentNodeAtIndex(input,pos)) then 
-              pos = pos + self:openNode(input:substr(pos),8);
-            else
-              if (self:isCdataNodeAtIndex(input,pos)) then 
-                pos = pos + self:openNode(input:substr(pos),4);
-              else
-                if (self:isDoctypeDeclarationNodeAtIndex(input,pos)) then 
-                  pos = pos + self:openNode(input:substr(pos),7);
-                else
-                  pos = pos + self:openNode(input:substr(pos),1);
-                end;
-              end;
-            end;
-          end;
-        end;
-      else
-        textBuffer = textBuffer .. input:charAt(pos);
-        pos = pos + 1;
-      end;
+    local doc = HTMLDocument.new();
+    local lex = HTMLLexer.new(haxe.io.StringInput.new(str));
+    local eof = false;
+    while (not eof) do 
+      local token = lex:next();
+      local _g = token.type;
+      local _g1 = _g[1];
+      if (_g1) == 0 then 
+        self:openTag(token);
+      elseif (_g1) == 1 then 
+        self:closeTag(token);
+      elseif (_g1) == 3 then 
+        self:handleComment(token);
+      elseif (_g1) == 4 then 
+        self:handleCdata(token);
+      elseif (_g1) == 5 then 
+        eof = true;else
+      _G.error("unknown token",0); end;
       end;
     do return doc end
   end,
-  'isCloseNodeAtIndex', function(self,input,index) 
-    do return input:charAt(index + 1) == "/" end
+  'openTag', function(self,token) 
   end,
-  'isCommentNodeAtIndex', function(self,input,index) 
-    do return input:indexOf("!--",index) ~= -1 end
+  'closeTag', function(self,token) 
   end,
-  'isCdataNodeAtIndex', function(self,input,index) 
-    do return input:indexOf("![CDATA[",index) ~= -1 end
+  'handleCdata', function(self,token) 
   end,
-  'isDoctypeDeclarationNodeAtIndex', function(self,input,index) 
-    do return input:indexOf("!DOCTYPE",index) ~= -1 end
-  end,
-  'openNode', function(self,input,type) 
-    local tmp = type == 1;
-    do return 0 end
-  end,
-  'makeElement', function(self,tagName) 
-    do return Element.new() end
-  end,
-  'closeNode', function(self,index) 
-    do return index end
+  'handleComment', function(self,token) 
   end
 )
+
+HTMLToken.new = function() 
+  local self = _hx_new()
+  HTMLToken.super(self)
+  return self
+end
+HTMLToken.super = function(self) 
+  self.commentData = _hx_o({__fields__={text=true},text=""});
+  self.cdataSectionData = _hx_o({__fields__={text=true},text=""});
+  self.tagCloseData = _hx_o({__fields__={ns=true,name=true},ns="",name=""});
+  self.tagOpenData = _hx_o({__fields__={ns=true,name=true,attr=true},ns="",name="",attr=haxe.ds.StringMap.new()});
+end
+_hx_exports["HTMLToken"] = HTMLToken
+
+HTMLTokenType.TagOpen = _hx_tab_array({[0]="TagOpen",0,__enum__ = HTMLTokenType},2)
+
+HTMLTokenType.TagClose = _hx_tab_array({[0]="TagClose",1,__enum__ = HTMLTokenType},2)
+
+HTMLTokenType.Text = _hx_tab_array({[0]="Text",2,__enum__ = HTMLTokenType},2)
+
+HTMLTokenType.Comment = _hx_tab_array({[0]="Comment",3,__enum__ = HTMLTokenType},2)
+
+HTMLTokenType.CdataSection = _hx_tab_array({[0]="CdataSection",4,__enum__ = HTMLTokenType},2)
+
+HTMLTokenType.EOF = _hx_tab_array({[0]="EOF",5,__enum__ = HTMLTokenType},2)
+
 
 List.new = function() 
   local self = _hx_new(List.prototype)
@@ -384,14 +409,7 @@ _NodeList.NodeList_Impl_._new = function()
   do return this1 end;
 end
 
-String.new = function(string) 
-  local self = _hx_new(String.prototype)
-  String.super(self,string)
-  self = string
-  return self
-end
-String.super = function(self,string) 
-end
+String.new = {}
 String.__index = function(s,k) 
   if (k == "length") then 
     do return _G.string.len(s) end;
@@ -419,40 +437,8 @@ String.fromCharCode = function(code)
   do return _G.string.char(code) end;
 end
 String.prototype = _hx_a(
-  'indexOf', function(self,str,startIndex) 
-    if (startIndex == nil) then 
-      startIndex = 1;
-    else
-      startIndex = startIndex + 1;
-    end;
-    local r = _G.string.find(self,str,startIndex,true);
-    if ((r ~= nil) and (r > 0)) then 
-      do return r - 1 end;
-    else
-      do return -1 end;
-    end;
-  end,
   'toString', function(self) 
     do return self end
-  end,
-  'charAt', function(self,index) 
-    do return _G.string.sub(self,index + 1,index + 1) end
-  end,
-  'substr', function(self,pos,len) 
-    if ((len == nil) or (len > (pos + self.length))) then 
-      len = self.length;
-    else
-      if (len < 0) then 
-        len = self.length + len;
-      end;
-    end;
-    if (pos < 0) then 
-      pos = self.length + pos;
-    end;
-    if (pos < 0) then 
-      pos = 0;
-    end;
-    do return _G.string.sub(self,pos + 1,pos + len) end
   end
 )
 
@@ -474,7 +460,55 @@ haxe.ds.StringMap.super = function(self)
 end
 haxe.ds.StringMap.__interfaces__ = {haxe.IMap}
 
+haxe.io.Bytes.new = function(length,b) 
+  local self = _hx_new()
+  haxe.io.Bytes.super(self,length,b)
+  return self
+end
+haxe.io.Bytes.super = function(self,length,b) 
+  self.length = length;
+  self.b = b;
+end
+haxe.io.Bytes.ofString = function(s) 
+  local _g = _hx_tab_array({ }, 0);
+  local _g2 = 0;
+  local _g1 = s.length;
+  while (_g2 < _g1) do 
+    _g2 = _g2 + 1;
+    local c = _g2 - 1;
+    _g:push(_G.string.byte(s,c + 1));
+    end;
+  local bytes = _g;
+  do return haxe.io.Bytes.new(bytes.length,bytes) end;
+end
+
 haxe.io.Input.new = {}
+
+haxe.io.BytesInput.new = function(b,pos,len) 
+  local self = _hx_new(haxe.io.BytesInput.prototype)
+  haxe.io.BytesInput.super(self,b,pos,len)
+  return self
+end
+haxe.io.BytesInput.super = function(self,b,pos,len) 
+  if (pos == nil) then 
+    pos = 0;
+  end;
+  if (len == nil) then 
+    len = b.length - pos;
+  end;
+  if (((pos < 0) or (len < 0)) or ((pos + len) > b.length)) then 
+    _G.error(haxe.io.Error.OutsideBounds,0);
+  end;
+  self.b = b.b;
+  self.pos = pos;
+  self.len = len;
+  self.totlen = len;
+end
+haxe.io.BytesInput.prototype = _hx_a(
+  
+)
+haxe.io.BytesInput.__super__ = haxe.io.Input
+setmetatable(haxe.io.BytesInput.prototype,{__index=haxe.io.Input.prototype})
 
 haxe.io.Eof.new = {}
 haxe.io.Eof.prototype = _hx_a(
@@ -482,6 +516,28 @@ haxe.io.Eof.prototype = _hx_a(
     do return "Eof" end
   end
 )
+
+haxe.io.Error.Blocked = _hx_tab_array({[0]="Blocked",0,__enum__ = haxe.io.Error},2)
+
+haxe.io.Error.Overflow = _hx_tab_array({[0]="Overflow",1,__enum__ = haxe.io.Error},2)
+
+haxe.io.Error.OutsideBounds = _hx_tab_array({[0]="OutsideBounds",2,__enum__ = haxe.io.Error},2)
+
+haxe.io.Error.Custom = function(e) local _x = _hx_tab_array({[0]="Custom",3,e,__enum__=haxe.io.Error}, 3); return _x; end 
+
+haxe.io.StringInput.new = function(s) 
+  local self = _hx_new(haxe.io.StringInput.prototype)
+  haxe.io.StringInput.super(self,s)
+  return self
+end
+haxe.io.StringInput.super = function(self,s) 
+  haxe.io.BytesInput.super(self,haxe.io.Bytes.ofString(s));
+end
+haxe.io.StringInput.prototype = _hx_a(
+  
+)
+haxe.io.StringInput.__super__ = haxe.io.BytesInput
+setmetatable(haxe.io.StringInput.prototype,{__index=haxe.io.BytesInput.prototype})
 
 lua.Boot.new = {}
 lua.Boot.isArray = function(o) 
@@ -794,214 +850,214 @@ local _hx_static_init = function()
     _g.v["height"] = _hx_tab_array({[0]="canvas", "embed", "iframe", "img", "input", "object", "video" }, 7);
     _g.k["height"] = true;
     
-    _g.v["hidden"] = _hx_tab_array({ }, 0);
+    _g.v["hidden"] = _hx_tab_array({[0]="*" }, 1);
     _g.k["hidden"] = true;
     
-    _g.v["high"] = _hx_tab_array({ }, 0);
+    _g.v["high"] = _hx_tab_array({[0]="meter" }, 1);
     _g.k["high"] = true;
     
-    _g.v["href"] = _hx_tab_array({ }, 0);
+    _g.v["href"] = _hx_tab_array({[0]="a", "area", "base", "link" }, 4);
     _g.k["href"] = true;
     
-    _g.v["hreflang"] = _hx_tab_array({ }, 0);
+    _g.v["hreflang"] = _hx_tab_array({[0]="a", "area", "link" }, 3);
     _g.k["hreflang"] = true;
     
-    _g.v["http-equiv"] = _hx_tab_array({ }, 0);
+    _g.v["http-equiv"] = _hx_tab_array({[0]="meta" }, 1);
     _g.k["http-equiv"] = true;
     
-    _g.v["icon"] = _hx_tab_array({ }, 0);
+    _g.v["icon"] = _hx_tab_array({[0]="command" }, 1);
     _g.k["icon"] = true;
     
-    _g.v["id"] = _hx_tab_array({ }, 0);
+    _g.v["id"] = _hx_tab_array({[0]="*" }, 1);
     _g.k["id"] = true;
     
-    _g.v["integrity"] = _hx_tab_array({ }, 0);
+    _g.v["integrity"] = _hx_tab_array({[0]="link", "script" }, 2);
     _g.k["integrity"] = true;
     
-    _g.v["ismap"] = _hx_tab_array({ }, 0);
+    _g.v["ismap"] = _hx_tab_array({[0]="img" }, 1);
     _g.k["ismap"] = true;
     
-    _g.v["itemprop"] = _hx_tab_array({ }, 0);
+    _g.v["itemprop"] = _hx_tab_array({[0]="*" }, 1);
     _g.k["itemprop"] = true;
     
-    _g.v["keytype"] = _hx_tab_array({ }, 0);
+    _g.v["keytype"] = _hx_tab_array({[0]="keygen" }, 1);
     _g.k["keytype"] = true;
     
-    _g.v["kind"] = _hx_tab_array({ }, 0);
+    _g.v["kind"] = _hx_tab_array({[0]="track" }, 1);
     _g.k["kind"] = true;
     
-    _g.v["label"] = _hx_tab_array({ }, 0);
+    _g.v["label"] = _hx_tab_array({[0]="track" }, 1);
     _g.k["label"] = true;
     
-    _g.v["lang"] = _hx_tab_array({ }, 0);
+    _g.v["lang"] = _hx_tab_array({[0]="*" }, 1);
     _g.k["lang"] = true;
     
-    _g.v["language"] = _hx_tab_array({ }, 0);
+    _g.v["language"] = _hx_tab_array({[0]="script" }, 1);
     _g.k["language"] = true;
     
-    _g.v["list"] = _hx_tab_array({ }, 0);
+    _g.v["list"] = _hx_tab_array({[0]="input" }, 1);
     _g.k["list"] = true;
     
-    _g.v["loop"] = _hx_tab_array({ }, 0);
+    _g.v["loop"] = _hx_tab_array({[0]="audio", "bgsound", "marquee", "video" }, 4);
     _g.k["loop"] = true;
     
-    _g.v["low"] = _hx_tab_array({ }, 0);
+    _g.v["low"] = _hx_tab_array({[0]="meter" }, 1);
     _g.k["low"] = true;
     
-    _g.v["manifest"] = _hx_tab_array({ }, 0);
+    _g.v["manifest"] = _hx_tab_array({[0]="html" }, 1);
     _g.k["manifest"] = true;
     
-    _g.v["max"] = _hx_tab_array({ }, 0);
+    _g.v["max"] = _hx_tab_array({[0]="input", "meter", "progress" }, 3);
     _g.k["max"] = true;
     
-    _g.v["maxlength"] = _hx_tab_array({ }, 0);
+    _g.v["maxlength"] = _hx_tab_array({[0]="input", "textarea" }, 2);
     _g.k["maxlength"] = true;
     
-    _g.v["minlength"] = _hx_tab_array({ }, 0);
+    _g.v["minlength"] = _hx_tab_array({[0]="input", "textarea" }, 2);
     _g.k["minlength"] = true;
     
-    _g.v["media"] = _hx_tab_array({ }, 0);
+    _g.v["media"] = _hx_tab_array({[0]="a", "area", "link", "source", "style" }, 5);
     _g.k["media"] = true;
     
-    _g.v["method"] = _hx_tab_array({ }, 0);
+    _g.v["method"] = _hx_tab_array({[0]="form" }, 1);
     _g.k["method"] = true;
     
-    _g.v["min"] = _hx_tab_array({ }, 0);
+    _g.v["min"] = _hx_tab_array({[0]="input", "meter" }, 2);
     _g.k["min"] = true;
     
-    _g.v["multiple"] = _hx_tab_array({ }, 0);
+    _g.v["multiple"] = _hx_tab_array({[0]="input", "select" }, 2);
     _g.k["multiple"] = true;
     
-    _g.v["muted"] = _hx_tab_array({ }, 0);
+    _g.v["muted"] = _hx_tab_array({[0]="video" }, 1);
     _g.k["muted"] = true;
     
-    _g.v["name"] = _hx_tab_array({ }, 0);
+    _g.v["name"] = _hx_tab_array({[0]="button", "form", "fieldset", "iframe", "input", "keygen", "object", "output", "select", "textarea", "map", "meta", "param" }, 13);
     _g.k["name"] = true;
     
-    _g.v["novalidate"] = _hx_tab_array({ }, 0);
+    _g.v["novalidate"] = _hx_tab_array({[0]="form" }, 1);
     _g.k["novalidate"] = true;
     
-    _g.v["open"] = _hx_tab_array({ }, 0);
+    _g.v["open"] = _hx_tab_array({[0]="details" }, 1);
     _g.k["open"] = true;
     
-    _g.v["optimum"] = _hx_tab_array({ }, 0);
+    _g.v["optimum"] = _hx_tab_array({[0]="meter" }, 1);
     _g.k["optimum"] = true;
     
-    _g.v["pattern"] = _hx_tab_array({ }, 0);
+    _g.v["pattern"] = _hx_tab_array({[0]="input" }, 1);
     _g.k["pattern"] = true;
     
-    _g.v["ping"] = _hx_tab_array({ }, 0);
+    _g.v["ping"] = _hx_tab_array({[0]="a", "area" }, 2);
     _g.k["ping"] = true;
     
-    _g.v["placeholder"] = _hx_tab_array({ }, 0);
+    _g.v["placeholder"] = _hx_tab_array({[0]="input", "textarea" }, 2);
     _g.k["placeholder"] = true;
     
-    _g.v["poster"] = _hx_tab_array({ }, 0);
+    _g.v["poster"] = _hx_tab_array({[0]="video" }, 1);
     _g.k["poster"] = true;
     
-    _g.v["preload"] = _hx_tab_array({ }, 0);
+    _g.v["preload"] = _hx_tab_array({[0]="audio", "video" }, 2);
     _g.k["preload"] = true;
     
-    _g.v["radiogroup"] = _hx_tab_array({ }, 0);
+    _g.v["radiogroup"] = _hx_tab_array({[0]="command" }, 1);
     _g.k["radiogroup"] = true;
     
-    _g.v["readonly"] = _hx_tab_array({ }, 0);
+    _g.v["readonly"] = _hx_tab_array({[0]="input", "textarea" }, 2);
     _g.k["readonly"] = true;
     
-    _g.v["rel"] = _hx_tab_array({ }, 0);
+    _g.v["rel"] = _hx_tab_array({[0]="a", "area", "link" }, 3);
     _g.k["rel"] = true;
     
-    _g.v["required"] = _hx_tab_array({ }, 0);
+    _g.v["required"] = _hx_tab_array({[0]="input", "select", "textarea" }, 3);
     _g.k["required"] = true;
     
-    _g.v["reversed"] = _hx_tab_array({ }, 0);
+    _g.v["reversed"] = _hx_tab_array({[0]="ol" }, 1);
     _g.k["reversed"] = true;
     
-    _g.v["rows"] = _hx_tab_array({ }, 0);
+    _g.v["rows"] = _hx_tab_array({[0]="textarea" }, 1);
     _g.k["rows"] = true;
     
-    _g.v["rowspan"] = _hx_tab_array({ }, 0);
+    _g.v["rowspan"] = _hx_tab_array({[0]="td", "th" }, 2);
     _g.k["rowspan"] = true;
     
-    _g.v["sandbox"] = _hx_tab_array({ }, 0);
+    _g.v["sandbox"] = _hx_tab_array({[0]="iframe" }, 1);
     _g.k["sandbox"] = true;
     
-    _g.v["scope"] = _hx_tab_array({ }, 0);
+    _g.v["scope"] = _hx_tab_array({[0]="th" }, 1);
     _g.k["scope"] = true;
     
-    _g.v["scoped"] = _hx_tab_array({ }, 0);
+    _g.v["scoped"] = _hx_tab_array({[0]="style" }, 1);
     _g.k["scoped"] = true;
     
-    _g.v["seamless"] = _hx_tab_array({ }, 0);
+    _g.v["seamless"] = _hx_tab_array({[0]="iframe" }, 1);
     _g.k["seamless"] = true;
     
-    _g.v["selected"] = _hx_tab_array({ }, 0);
+    _g.v["selected"] = _hx_tab_array({[0]="option" }, 1);
     _g.k["selected"] = true;
     
-    _g.v["shape"] = _hx_tab_array({ }, 0);
+    _g.v["shape"] = _hx_tab_array({[0]="a", "area" }, 2);
     _g.k["shape"] = true;
     
-    _g.v["size"] = _hx_tab_array({ }, 0);
+    _g.v["size"] = _hx_tab_array({[0]="input", "select" }, 2);
     _g.k["size"] = true;
     
-    _g.v["sizes"] = _hx_tab_array({ }, 0);
+    _g.v["sizes"] = _hx_tab_array({[0]="link", "img", "source" }, 3);
     _g.k["sizes"] = true;
     
-    _g.v["slot"] = _hx_tab_array({ }, 0);
+    _g.v["slot"] = _hx_tab_array({[0]="*" }, 1);
     _g.k["slot"] = true;
     
-    _g.v["span"] = _hx_tab_array({ }, 0);
+    _g.v["span"] = _hx_tab_array({[0]="col", "colgroup" }, 2);
     _g.k["span"] = true;
     
-    _g.v["spellcheck"] = _hx_tab_array({ }, 0);
+    _g.v["spellcheck"] = _hx_tab_array({[0]="*" }, 1);
     _g.k["spellcheck"] = true;
     
-    _g.v["src"] = _hx_tab_array({ }, 0);
+    _g.v["src"] = _hx_tab_array({[0]="audio", "embed", "iframe", "img", "input", "script", "source", "track", "video" }, 9);
     _g.k["src"] = true;
     
-    _g.v["srcdoc"] = _hx_tab_array({ }, 0);
+    _g.v["srcdoc"] = _hx_tab_array({[0]="iframe" }, 1);
     _g.k["srcdoc"] = true;
     
-    _g.v["srclang"] = _hx_tab_array({ }, 0);
+    _g.v["srclang"] = _hx_tab_array({[0]="track" }, 1);
     _g.k["srclang"] = true;
     
-    _g.v["srcset"] = _hx_tab_array({ }, 0);
+    _g.v["srcset"] = _hx_tab_array({[0]="img" }, 1);
     _g.k["srcset"] = true;
     
-    _g.v["start"] = _hx_tab_array({ }, 0);
+    _g.v["start"] = _hx_tab_array({[0]="ol" }, 1);
     _g.k["start"] = true;
     
-    _g.v["step"] = _hx_tab_array({ }, 0);
+    _g.v["step"] = _hx_tab_array({[0]="input" }, 1);
     _g.k["step"] = true;
     
-    _g.v["style"] = _hx_tab_array({ }, 0);
+    _g.v["style"] = _hx_tab_array({[0]="*" }, 1);
     _g.k["style"] = true;
     
-    _g.v["summary"] = _hx_tab_array({ }, 0);
+    _g.v["summary"] = _hx_tab_array({[0]="table" }, 1);
     _g.k["summary"] = true;
     
-    _g.v["tabindex"] = _hx_tab_array({ }, 0);
+    _g.v["tabindex"] = _hx_tab_array({[0]="*" }, 1);
     _g.k["tabindex"] = true;
     
-    _g.v["target"] = _hx_tab_array({ }, 0);
+    _g.v["target"] = _hx_tab_array({[0]="a", "area", "base", "form" }, 4);
     _g.k["target"] = true;
     
-    _g.v["title"] = _hx_tab_array({ }, 0);
+    _g.v["title"] = _hx_tab_array({[0]="*" }, 1);
     _g.k["title"] = true;
     
-    _g.v["type"] = _hx_tab_array({ }, 0);
+    _g.v["type"] = _hx_tab_array({[0]="button", "input", "command", "embed", "object", "script", "source", "style", "menu" }, 9);
     _g.k["type"] = true;
     
-    _g.v["usemap"] = _hx_tab_array({ }, 0);
+    _g.v["usemap"] = _hx_tab_array({[0]="img", "input", "object" }, 3);
     _g.k["usemap"] = true;
     
-    _g.v["value"] = _hx_tab_array({ }, 0);
+    _g.v["value"] = _hx_tab_array({[0]="button", "option", "input", "li", "meter", "progress", "param" }, 7);
     _g.k["value"] = true;
     
-    _g.v["width"] = _hx_tab_array({ }, 0);
+    _g.v["width"] = _hx_tab_array({[0]="canvas", "embed", "iframe", "img", "input", "object", "video" }, 7);
     _g.k["width"] = true;
     
-    _g.v["wrap"] = _hx_tab_array({ }, 0);
+    _g.v["wrap"] = _hx_tab_array({[0]="textarea" }, 1);
     _g.k["wrap"] = true;
     
     _hx_2 = _g;

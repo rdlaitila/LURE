@@ -20,17 +20,13 @@
 */
 
 /**
- *  Provides a list of valid token types for the HTMLLexer
+ *  HTMLDocument is an abstract interface of the DOM which provides access to
+ *  special properties and methods not present by default on a regular (XML)
+ *  document.
+ *
+ *  https://developer.mozilla.org/en-US/docs/Web/API/HTMLDocument
  */
-@:expose
-@:keep
-enum HTMLTokenType
-{
-    Unknown;
-    TagOpen;
-    TagClose;
-    Text;
-    Comment;
-    CdataSection;
-    EOF;
+ @:expose
+ @:keep
+class HTMLDocument extends Document {
 }

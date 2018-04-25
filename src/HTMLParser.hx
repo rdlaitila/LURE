@@ -1,3 +1,29 @@
+/*
+ * Copyright (c) 2017 Regan Daniel Laitila
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to use,
+ * copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the
+ * Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+ * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH
+ * THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
+/**
+ *  parser for html
+ *
+ *  https://www.w3.org/TR/2011/WD-html5-20110113/parsing.html
+ */
 @:expose
 @:keep
 class HTMLParser {
@@ -167,70 +193,69 @@ class HTMLParser {
     public function new() {
     }
 
-    public function parseFromString(str:DOMString):Document {
-        var doc = new Document();
-        var input:DOMString = new String(str);
-        var pos:Int = 0;
-        var textBuffer:DOMString = "";
+    /**
+     *  produces a HTML Document from HTML source string
+     *  @param str - source html string
+     *  @return HTMLDocument
+     */
+    public function parseFromString(str:DOMString):HTMLDocument {
+        var doc = new HTMLDocument();
+        var lex = new HTMLLexer(new haxe.io.StringInput(str));
+        var eof = false;
 
-        while (pos < input.length) {
-            if (input.charAt(pos) == "<") {
-                if (textBuffer.length > 0)
-                    pos += this.openNode(input.substr(pos), Node.TEXT_NODE);
+        while(!eof) {
+            var token = lex.next();
 
-                else if (isCloseNodeAtIndex(input, pos))
-                    pos += this.closeNode(pos);
+            switch(token.type) {
+                case HTMLTokenType.TagOpen:
+                    this.openTag(token);
 
-                else if (isCommentNodeAtIndex(input, pos))
-                    pos += this.openNode(input.substr(pos), Node.COMMENT_NODE);
+                case HTMLTokenType.TagClose:
+                    this.closeTag(token);
 
-                else if (isCdataNodeAtIndex(input, pos))
-                    pos += this.openNode(input.substr(pos), Node.CDATA_SECTION_NODE);
+                case HTMLTokenType.CdataSection:
+                    this.handleCdata(token);
 
-                else if (isDoctypeDeclarationNodeAtIndex(input, pos))
-                    pos += this.openNode(input.substr(pos), Node.PROCESSING_INSTRUCTION_NODE);
+                case HTMLTokenType.Comment:
+                    this.handleComment(token);
 
-                else
-                    pos += this.openNode(input.substr(pos), Node.ELEMENT_NODE);
+                case HTMLTokenType.EOF:
+                    eof = true;
 
-            } else {
-                textBuffer += input.charAt(pos);
-                pos++;
+                default:
+                    throw "unknown token";
             }
         }
 
         return doc;
     }
 
-    private function isCloseNodeAtIndex(input:DOMString, index:Int):Bool {
-        return input.charAt(index + 1) == "/";
+    /**
+     *  opens and adds a new tag element on the stack
+     *  @param token -
+     */
+    private function openTag(token:HTMLToken):Void {
+        var isUnknownElement = (HTMLParser.elements.indexOf(token.tagOpenData.name.toLowerCase()) > -1);
     }
 
-    private function isCommentNodeAtIndex(input:DOMString, index:Int):Bool {
-        return input.indexOf("!--", index) != -1;
+    /**
+     *  closes a matching tag on the stack
+     *  @param token -
+     */
+    private function closeTag(token:HTMLToken):Void {
     }
 
-    private function isCdataNodeAtIndex(input:DOMString, index:Int):Bool {
-        return input.indexOf("![CDATA[", index) != -1;
+    /**
+     *  handles incoming cdata section
+     *  @param token -
+     */
+    private function handleCdata(token:HTMLToken):Void {
     }
 
-    private function isDoctypeDeclarationNodeAtIndex(input:DOMString, index:Int):Bool {
-        return input.indexOf("!DOCTYPE", index) != -1;
-    }
-
-    private function openNode(input:DOMString, type:Int):Int {
-        if (type == Node.ELEMENT_NODE) {
-
-        }
-
-        return 0;
-    }
-
-    private function makeElement(tagName:DOMString):Element {
-        return new Element();
-    }
-
-    private function closeNode(index:Int):Int {
-        return index;
+    /**
+     *  handles incoming comment
+     *  @param token -
+     */
+    private function handleComment(token:HTMLToken):Void {
     }
 }

@@ -9,6 +9,7 @@ class TestRunner {
         r.add(new Node_test());
         r.add(new NodeList_test());
         r.add(new XMLParser_test());
+        r.add(new HTMLLexer_test());
 
         r.run();
     }
